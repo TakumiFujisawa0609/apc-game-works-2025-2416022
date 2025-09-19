@@ -3,7 +3,6 @@
 #include<DxLib.h>
 
 #include"../Manager/Generic/SceneManager.h"
-#include"../Manager/Generic/SceneManager.h"
 #include"../Manager/Generic/InputManager.h"
 
 SceneGameOver::SceneGameOver(void)

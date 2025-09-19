@@ -34,8 +34,8 @@ void SceneManager::Init(void)
 	sceneId_ = SCENE_ID::TITLE;
 	waitSceneId_ = SCENE_ID::NONE;
 
-	fader_ = std::make_unique<Fader>();
-	fader_->Init();
+	mosaicfade_ = std::make_unique<MosaicFade>();
+	mosaicfade_->Init();
 
 	//シーン
 	scene_ = new SceneTitle();
@@ -51,16 +51,6 @@ void SceneManager::Init(void)
 	DoChangeScene(SCENE_ID::TITLE);
 }
 
-void SceneManager::Init3D(void)
-{
-	//背景色設定
-	SetBackgroundColor(0, 0, 0);
-
-
-	//バックカリングを有効にする
-	SetUseBackCulling(true);
-}
-
 void SceneManager::Update(void)
 {
 	if (scene_ == nullptr)
@@ -73,7 +63,7 @@ void SceneManager::Update(void)
 	deltaTime_ = static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
 	preTime_ = nowTime;
 
-	fader_ -> Update();
+	mosaicfade_ -> Update();
 	if (isSceneChanging_)
 	{
 		Fade();
@@ -99,8 +89,8 @@ void SceneManager::Draw(void)
 	//描画
 	scene_->Draw();
 
-	//暗転・明転
-	fader_->Draw();
+	//フェード
+	mosaicfade_->Draw();
 }
 
 void SceneManager::Destroy(void)
@@ -117,8 +107,8 @@ void SceneManager::ChangeScene(SCENE_ID nextId)
 	// 遷移先シーンをメンバ変数に保持
 	waitSceneId_ = nextId;
 
-	//フェードアウト(暗転)を開始する
-	fader_->SetFade(Fader::STATE::FADE_OUT);
+	//フェードアウトを開始する
+	mosaicfade_->SetFade(MosaicFade::STATE::FADE_OUT);
 	isSceneChanging_ = true;
 }
 
@@ -140,7 +130,7 @@ SceneManager::SceneManager(void)
 	waitSceneId_ = SCENE_ID::NONE;
 
 	scene_ = nullptr;
-	fader_ = nullptr;
+	mosaicfade_ = nullptr;
 
 	isSceneChanging_ = false;
 
@@ -198,26 +188,26 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 
 void SceneManager::Fade(void)
 {
-	Fader::STATE fState = fader_->GetState();
+	MosaicFade::STATE fState = mosaicfade_->GetState();
 	switch (fState)
 	{
-	case Fader::STATE::FADE_IN:
+	case MosaicFade::STATE::FADE_IN:
 		// 明転中
-		if (fader_->IsEnd())
+		if (mosaicfade_->IsEnd())
 		{
 			// 明転が終了したら、フェード処理終了
-			fader_->SetFade(Fader::STATE::NONE);
+			mosaicfade_->SetFade(MosaicFade::STATE::NONE);
 			isSceneChanging_ = false;
 		}
 		break;
-	case Fader::STATE::FADE_OUT:
+	case MosaicFade::STATE::FADE_OUT:
 		// 暗転中
-		if (fader_->IsEnd())
+		if (mosaicfade_->IsEnd())
 		{
 			// 完全に暗転してからシーン遷移
 			DoChangeScene(waitSceneId_);
 			// 暗転から明転へ
-			fader_->SetFade(Fader::STATE::FADE_IN);
+			mosaicfade_->SetFade(MosaicFade::STATE::FADE_IN);
 		}
 		break;
 	}

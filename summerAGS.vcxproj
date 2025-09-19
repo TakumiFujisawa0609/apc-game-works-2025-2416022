@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Common\MosaicFade.cpp" />
     <ClCompile Include="Src\Application.cpp" />
     <ClCompile Include="Src\Common\Easing.cpp" />
     <ClCompile Include="Src\Common\Fader.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="Src\Utility\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Common\MosaicFade.h" />
     <ClInclude Include="Src\Application.h" />
     <ClInclude Include="Src\Common\Easing.h" />
     <ClInclude Include="Src\Common\Fader.h" />

@@ -39,6 +39,7 @@ void SceneGame::Update(void)
 
 void SceneGame::Draw(void)
 {
+	DrawFormatString(0, 0, 0xffffff, "ゲームシーン");
 
 #ifdef _DEBUG
 	//デバック表示

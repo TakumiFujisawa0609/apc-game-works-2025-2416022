@@ -12,7 +12,7 @@ SceneTitle::SceneTitle(void)
 
 void SceneTitle::Init(void)
 {
-
+	logo_ = LoadGraph((Application::PATH_IMAGE + "nc362712.png").c_str());
 }
 
 void SceneTitle::Update(void)
@@ -39,12 +39,10 @@ void SceneTitle::Draw(void)
 
 #endif // SCENE_DEBUG
 
-	int Cr = GetColor(255, 255, 255);
-
-	int Title = DrawBox(Application::SCREEN_SIZE_X/2, Application::SCREEN_SIZE_Y / 2, 640, 480, Cr, TRUE);    // 四角形を描画
+	DrawFormatString(0, 0, 0xffffff, "タイトル");
 
 	//タイトルロゴ
-	DrawRotaGraph(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2, 1.0, 0.0, logo_, true);
+	DrawRotaGraph(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2, 0.5, 0.0, logo_, true);
 
 	int font = CreateFontToHandle(NULL, 10, 10);
 

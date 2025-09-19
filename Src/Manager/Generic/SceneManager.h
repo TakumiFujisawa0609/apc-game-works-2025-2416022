@@ -5,7 +5,7 @@
 #include<memory>
 
 #include"../../Application.h"
-#include"../../Common/Fader.h"
+#include"../../Common/MosaicFade.h"
 
 class SceneBase;
 
@@ -40,9 +40,6 @@ public:
 	//初期化処理
 	void Init(void);
 
-	//3Dの初期化処理
-	void Init3D(void);
-
 	//更新処理
 	void Update(void);
 
@@ -70,7 +67,7 @@ private:
 	SCENE_ID waitSceneId_;	//次のシーン
 
 	//フェード
-	std::unique_ptr<Fader> fader_;
+	std::unique_ptr<MosaicFade> mosaicfade_;
 
 	//各種シーン
 	SceneBase* scene_;
