@@ -9,6 +9,7 @@
 #include "../../Scene/SceneGame.h"
 #include "../../Scene/SceneGameOver.h"
 #include "../../Scene/SceneGameClear.h"
+#include "../../Common/Fader.h"
 
 SceneManager* SceneManager::instance_ = nullptr;
 
@@ -34,8 +35,9 @@ void SceneManager::Init(void)
 	sceneId_ = SCENE_ID::TITLE;
 	waitSceneId_ = SCENE_ID::NONE;
 
-	mosaicfade_ = std::make_unique<MosaicFade>();
-	mosaicfade_->Init();
+	// フェード機能の初期化
+	fader_ = new Fader();
+	fader_->Init();
 
 	//シーン
 	scene_ = new SceneTitle();
@@ -63,7 +65,7 @@ void SceneManager::Update(void)
 	deltaTime_ = static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
 	preTime_ = nowTime;
 
-	mosaicfade_ -> Update();
+	fader_ -> Update();
 	if (isSceneChanging_)
 	{
 		Fade();
@@ -90,7 +92,7 @@ void SceneManager::Draw(void)
 	scene_->Draw();
 
 	//フェード
-	mosaicfade_->Draw();
+	fader_->Draw();
 }
 
 void SceneManager::Destroy(void)
@@ -108,7 +110,7 @@ void SceneManager::ChangeScene(SCENE_ID nextId)
 	waitSceneId_ = nextId;
 
 	//フェードアウトを開始する
-	mosaicfade_->SetFade(MosaicFade::STATE::FADE_OUT);
+	fader_->SetFade(Fader::STATE::FADE_OUT);
 	isSceneChanging_ = true;
 }
 
@@ -130,7 +132,7 @@ SceneManager::SceneManager(void)
 	waitSceneId_ = SCENE_ID::NONE;
 
 	scene_ = nullptr;
-	mosaicfade_ = nullptr;
+	fader_ = nullptr;
 
 	isSceneChanging_ = false;
 
@@ -188,28 +190,30 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 
 void SceneManager::Fade(void)
 {
-	MosaicFade::STATE fState = mosaicfade_->GetState();
+
+	Fader::STATE fState = fader_->GetState();
 	switch (fState)
 	{
-	case MosaicFade::STATE::FADE_IN:
+	case Fader::STATE::FADE_IN:
 		// 明転中
-		if (mosaicfade_->IsEnd())
+		if (fader_->IsEnd())
 		{
 			// 明転が終了したら、フェード処理終了
-			mosaicfade_->SetFade(MosaicFade::STATE::NONE);
+			fader_->SetFade(Fader::STATE::NONE);
 			isSceneChanging_ = false;
 		}
 		break;
-	case MosaicFade::STATE::FADE_OUT:
+	case Fader::STATE::FADE_OUT:
 		// 暗転中
-		if (mosaicfade_->IsEnd())
+		if (fader_->IsEnd())
 		{
 			// 完全に暗転してからシーン遷移
 			DoChangeScene(waitSceneId_);
 			// 暗転から明転へ
-			mosaicfade_->SetFade(MosaicFade::STATE::FADE_IN);
+			fader_->SetFade(Fader::STATE::FADE_IN);
 		}
 		break;
 	}
+
 }
 

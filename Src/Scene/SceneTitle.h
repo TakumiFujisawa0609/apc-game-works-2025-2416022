@@ -31,6 +31,10 @@ private:
 	//タイトルロゴ
 	int logo_;
 
+	// タイトルロゴのサイズ取得
+	int logoX_;
+	int logoY_;
+
 	//描画(デバック)
 	void DrawDebug(void);
 };

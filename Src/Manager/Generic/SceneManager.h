@@ -5,9 +5,9 @@
 #include<memory>
 
 #include"../../Application.h"
-#include"../../Common/MosaicFade.h"
 
 class SceneBase;
+class Fader;
 
 class SceneManager
 {
@@ -66,8 +66,8 @@ private:
 	SCENE_ID sceneId_;		//現在のシーン
 	SCENE_ID waitSceneId_;	//次のシーン
 
-	//フェード
-	std::unique_ptr<MosaicFade> mosaicfade_;
+	// フェード
+	Fader* fader_;
 
 	//各種シーン
 	SceneBase* scene_;
