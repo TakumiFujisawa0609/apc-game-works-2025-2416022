@@ -2,18 +2,26 @@
 
 #include<DxLib.h>
 
+#include "../Object/Stage/Stage.h"
+#include "../Object/Neko/Neko.h"
 #include"../Common/Easing.h"
 #include"../Manager/Generic/SceneManager.h"
 #include"../Manager/Generic/InputManager.h"
 
 SceneGame::SceneGame(void)
 {
+	neko_ = nullptr;
+	stage_ = nullptr;
 }
 
 void SceneGame::Init(void)
 {
+	// ステージ初期化
+	stage_ = new Stage();
+	stage_->Init();
 
-
+	neko_ = new Neko();
+	neko_->Init();
 }
 
 void SceneGame::Update(void)
@@ -35,11 +43,21 @@ void SceneGame::Update(void)
 	//	//処理終了
 	//	return;
 	//}
+
+	// ステージ更新
+	stage_->Update();
+
+	neko_->Update();
 }
 
 void SceneGame::Draw(void)
 {
 	DrawFormatString(0, 0, 0xffffff, "ゲームシーン");
+
+	// ステージ描画
+	stage_->Draw();
+
+	neko_->Draw();
 
 #ifdef _DEBUG
 	//デバック表示
@@ -49,7 +67,12 @@ void SceneGame::Draw(void)
 
 void SceneGame::Release(void)
 {
+	neko_->Release();
+	delete neko_;
 
+	// ステージ解放
+	stage_->Release();
+	delete stage_;
 }
 
 void SceneGame::DrawDebug(void)

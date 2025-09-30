@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Object\Neko\Neko.cpp" />
     <ClCompile Include="Src\Common\MosaicFade.cpp" />
     <ClCompile Include="Src\Application.cpp" />
     <ClCompile Include="Src\Common\Easing.cpp" />
@@ -159,8 +160,10 @@
     <ClCompile Include="Src\Scene\SceneGameOver.cpp" />
     <ClCompile Include="Src\Scene\SceneTitle.cpp" />
     <ClCompile Include="Src\Utility\Utility.cpp" />
+    <ClCompile Include="Src\Object\Stage\Stage.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Object\Neko\Neko.h" />
     <ClInclude Include="Src\Common\MosaicFade.h" />
     <ClInclude Include="Src\Application.h" />
     <ClInclude Include="Src\Common\Easing.h" />
@@ -180,6 +183,7 @@
     <ClInclude Include="Src\Scene\SceneGameOver.h" />
     <ClInclude Include="Src\Scene\SceneTitle.h" />
     <ClInclude Include="Src\Utility\Utility.h" />
+    <ClInclude Include="Src\Object\Stage\Stage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

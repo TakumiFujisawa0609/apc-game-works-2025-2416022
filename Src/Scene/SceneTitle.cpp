@@ -16,13 +16,35 @@ void SceneTitle::Init(void)
 	logo_ = LoadGraph((Application::PATH_IMAGE + "nc362712.png").c_str());
 	
 	GetGraphSize(logo_, &logoX_, &logoY_);
+
+	// Šg‘å—¦
+	scale_ = 0.5f;
+
+	// ŽÀÛ‚É•`‰æ‚³‚ê‚éƒTƒCƒY
+	drawW_ = (int)(logoX_ * scale_);
+	drawH_ = (int)(logoY_ * scale_);
+
+	// k¬˜g‚Ìƒ}[ƒWƒ“
+	margin_ = 30; // ¬‚³‚­‚µ‚½‚¢•
+
+	// ’†SÀ•W
+	cx = (Application::SCREEN_SIZE_X / 2) - drawW_ / 2 + margin_ - 5;
+	cy = (Application::SCREEN_SIZE_Y / 2) - drawH_ / 2 + margin_ - 2;
+	cx1 = (Application::SCREEN_SIZE_X / 2) + drawW_ / 2 - margin_ + 8;
+	cy1 = (Application::SCREEN_SIZE_X / 2) + drawH_ / 2 - margin_ - 125;
 }
 
 void SceneTitle::Update(void)
 {
+	// “ü—Í”»’è
+	Vector2 mousePos = InputManager::GetInstance().GetMousePos();
 
-	//ƒV[ƒ“‘JˆÚ(ƒfƒoƒbƒO)
-	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+	bool isHit =
+		(mousePos.x >= cx && mousePos.x <= cx1 &&
+			mousePos.y >= cy && mousePos.y <= cy1);
+
+	//ƒV[ƒ“‘JˆÚ
+	if (isHit && InputManager::GetInstance().IsTrgMouseLeft())
 	{
 
 		//ƒV[ƒ“‘JˆÚ
@@ -47,26 +69,13 @@ void SceneTitle::Draw(void)
 	//ƒ^ƒCƒgƒ‹ƒƒS
 	DrawRotaGraph(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2, 0.5, 0.0, logo_, true);
 
-	// Šg‘å—¦
-	float scale = 0.5f;
 
-	// ’†SÀ•W
-	int cx = Application::SCREEN_SIZE_X / 2;
-	int cy = Application::SCREEN_SIZE_Y / 2;
-
-	// ŽÀÛ‚É•`‰æ‚³‚ê‚éƒTƒCƒY
-	int drawW = (int)(logoX_ * scale);
-	int drawH = (int)(logoY_ * scale);
-
-	// k¬˜g‚Ìƒ}[ƒWƒ“
-	int margin = 30; // ¬‚³‚­‚µ‚½‚¢•
-
-	// ˜g‚ð•`‰æi­‚µ¬‚³‚ßj
+	// ˜g‚ð•`‰æ
 	DrawBox(
-		cx - drawW / 2 + margin-5,  // ¶ãX
-		cy - drawH / 2 + margin-2,  // ¶ãY
-		cx + drawW / 2 - margin+8,  // ‰E‰ºX
-		cy + drawH / 2 - margin+2,  // ‰E‰ºY
+		cx,  // ¶ãX
+		cy,  // ¶ãY
+		cx1,  // ‰E‰ºX
+		cy1,  // ‰E‰ºY
 		GetColor(255, 0, 0),
 		FALSE
 	);

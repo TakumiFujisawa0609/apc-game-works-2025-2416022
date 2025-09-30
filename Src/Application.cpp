@@ -12,8 +12,8 @@ Application* Application::instance_ = nullptr;
 
 //ファイル指定パス
 const std::string Application::PATH_IMAGE = "Data/Title/";
-const std::string Application::PATH_MODEL = "Data/Model/";
-const std::string Application::PATH_ANIM = "Data/Anim/";
+const std::string Application::PATH_MODEL = "Data/Neko/";
+const std::string Application::PATH_STAGE = "Data/Stage/";
 const std::string Application::PATH_EFFECT = "Data/Effect/";
 const std::string Application::PATH_TEXT = "Data/Text/";
 const std::string Application::PATH_FONT = "Data/Font/";

@@ -2,8 +2,13 @@
 
 #include<memory>
 
+
+
 #include "SceneBase.h"
 #include "../Application.h"
+
+class Stage;
+class Neko;
 
 class SceneGame : public SceneBase
 {
@@ -31,5 +36,9 @@ private:
 
 	//描画(デバッグ)
 	void DrawDebug(void);
+
+	Stage* stage_;
+
+	Neko* neko_;
 };
 

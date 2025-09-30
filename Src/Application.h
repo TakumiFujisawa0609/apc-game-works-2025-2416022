@@ -7,8 +7,8 @@ class Application
 {
 public:
 #ifdef _DEBUG //デバックスクリーンサイズ
-	static constexpr int SCREEN_SIZE_X = 800;
-	static constexpr int SCREEN_SIZE_Y = 600;
+	static constexpr int SCREEN_SIZE_X = 1024;
+	static constexpr int SCREEN_SIZE_Y = 768;
 
 #else
 
@@ -31,7 +31,7 @@ public:
 	//----------------------------------------
 	static const std::string PATH_IMAGE;
 	static const std::string PATH_MODEL;
-	static const std::string PATH_ANIM;
+	static const std::string PATH_STAGE;
 	static const std::string PATH_EFFECT;
 	static const std::string PATH_TEXT;
 	static const std::string PATH_FONT;

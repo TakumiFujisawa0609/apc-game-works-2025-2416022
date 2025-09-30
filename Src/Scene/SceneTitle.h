@@ -35,6 +35,18 @@ private:
 	int logoX_;
 	int logoY_;
 
+	float scale_;
+	int drawW_;
+	int drawH_;
+	int margin_;
+	int cx;
+	int cy;
+	int cx1;
+	int cy1;
+
+	// 押下中フラグ（静的変数にして一時保持）
+	static bool pressedOnButton;
+
 	//描画(デバック)
 	void DrawDebug(void);
 };
