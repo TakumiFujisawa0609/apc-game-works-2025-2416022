@@ -40,5 +40,7 @@ private:
 	Stage* stage_;
 
 	Neko* neko_;
+
+	int count_;
 };
 

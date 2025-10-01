@@ -87,6 +87,7 @@ void SceneTitle::Draw(void)
 
 void SceneTitle::Release(void)
 {
+	DeleteGraph(logo_);
 }
 
 void SceneTitle::DrawDebug(void)

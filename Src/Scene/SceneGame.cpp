@@ -22,37 +22,33 @@ void SceneGame::Init(void)
 
 	neko_ = new Neko();
 	neko_->Init();
+
+	count_ = 0;
 }
 
 void SceneGame::Update(void)
 {
 	auto& input = InputManager::GetInstance();
 
-	////シーン遷移(デバッグ)
-	//if (input.IsTrgDown(KEY_INPUT_SPACE))
-	//{
-	//	//決定音
-	//	sound.Play(SoundManager::SOUND::SE_PUSH);
-
-	//	//BGM停止
-	//	sound.Stop(SoundManager::SOUND::BGM_TITLE);
-
-	//	//シーン遷移
-	//	SceneManager::GetInstance().ChangeScene(SceneManager::SCENE_ID::GAMEOVER);
-
-	//	//処理終了
-	//	return;
-	//}
-
 	// ステージ更新
 	stage_->Update();
 
 	neko_->Update();
+
+	count_++;
+	if (count_ >= 210)
+	{
+		//シーン遷移
+		SceneManager::GetInstance().ChangeScene(SceneManager::SCENE_ID::GAMEOVER);
+
+		//処理終了
+		return;
+	}
 }
 
 void SceneGame::Draw(void)
 {
-	DrawFormatString(0, 0, 0xffffff, "ゲームシーン");
+	DrawFormatString(0, 0, 0xffffff, "ゲームシーンです。時間経過でシーン遷移します。");
 
 	// ステージ描画
 	stage_->Draw();

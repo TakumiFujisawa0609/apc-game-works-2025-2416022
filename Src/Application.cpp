@@ -103,7 +103,15 @@ void Application::Run(void)
 		//ESCAPEキーが押されたら終了
 		if (CheckHitKey(KEY_INPUT_ESCAPE) == 1)
 		{
-			return;
+			int id;
+
+			id = MessageBox(NULL, TEXT("ゲームを終了します。よろしいですか？"), TEXT(""), MB_YESNO | MB_ICONQUESTION);
+
+			if (id == IDYES)
+			{
+				return;
+			}
+
 		}
 		//更新処理
 		inputManager.Update();

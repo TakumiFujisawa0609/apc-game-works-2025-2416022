@@ -5,7 +5,8 @@ class Neko
 {
 public:
 
-	//static constexpr int NEKO_WID=
+	static constexpr int NEKO_WID = 128;
+	static constexpr int NEKO_HIG = 128;
 
 	// èÛë‘
 	enum class STATE
@@ -41,7 +42,7 @@ private:
 
 	int img_;
 
-	int pos_;
+	VECTOR pos_;
 
 };
 
