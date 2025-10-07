@@ -35,8 +35,8 @@ void SceneGame::Update(void)
 
 	neko_->Update();
 
-	count_++;
-	if (count_ >= 210)
+	//count_++;
+	if (count_ >= 500)
 	{
 		//ƒV[ƒ“‘JˆÚ
 		SceneManager::GetInstance().ChangeScene(SceneManager::SCENE_ID::GAMEOVER);
