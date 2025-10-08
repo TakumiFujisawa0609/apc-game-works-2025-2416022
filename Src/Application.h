@@ -32,7 +32,7 @@ public:
 	static const std::string PATH_IMAGE;
 	static const std::string PATH_MODEL;
 	static const std::string PATH_STAGE;
-	static const std::string PATH_EFFECT;
+	static const std::string PATH_ITEM;
 	static const std::string PATH_TEXT;
 	static const std::string PATH_FONT;
 	static const std::string PATH_JSON;

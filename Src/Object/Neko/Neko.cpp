@@ -20,6 +20,8 @@ void Neko::Init(void)
 
 	moveTimer_ = 0;
 	isMoving_ = false;
+
+    ChangeState(STATE::MOVE);
 }
 
 void Neko::Update(void)
@@ -152,6 +154,32 @@ void Neko::Move(void)
 void Neko::ChangeState(STATE state)
 {
     state_ = state;
+
+    switch (state)
+    {
+    case Neko::STATE::NONE:
+        break;
+    case Neko::STATE::STANDBY:
+        ChangeStandby();
+        break;
+    case Neko::STATE::MOVE:
+        ChangeMove();
+        break;
+    case Neko::STATE::EAT:
+        ChangeEat();
+        break;
+    case Neko::STATE::ACT:
+        ChangeAct();
+        break;
+    case Neko::STATE::GAMEOVER:
+        ChangeGameover();
+        break;
+    case Neko::STATE::END:
+        ChangeEnd();
+        break;
+    default:
+        break;
+    }
 }
 
 void Neko::ChangeStandby(void)
@@ -160,6 +188,7 @@ void Neko::ChangeStandby(void)
 
 void Neko::ChangeMove(void)
 {
+    
 }
 
 void Neko::ChangeEat(void)
@@ -184,6 +213,7 @@ void Neko::UpdateStandby(void)
 
 void Neko::UpdateMove(void)
 {
+    Move();
 }
 
 void Neko::UpdateEat(void)
@@ -213,20 +243,45 @@ void Neko::DrawStandby(void)
 
 void Neko::DrawMove(void)
 {
+    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
+
+    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+        GetColor(255, 0, 0), false);
 }
 
 void Neko::DrawEat(void)
 {
+    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
+
+    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+        GetColor(255, 0, 0), false);
 }
 
 void Neko::DrawAct(void)
 {
+    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
+
+    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+        GetColor(255, 0, 0), false);
 }
 
 void Neko::DrawGameover(void)
 {
+    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
+
+    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+        GetColor(255, 0, 0), false);
 }
 
 void Neko::DrawEnd(void)
 {
+    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
+
+    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+        GetColor(255, 0, 0), false);
 }

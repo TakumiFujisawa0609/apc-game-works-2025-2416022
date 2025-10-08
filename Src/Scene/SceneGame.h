@@ -7,8 +7,10 @@
 #include "SceneBase.h"
 #include "../Application.h"
 
+
 class Stage;
 class Neko;
+class ItemManager;
 
 class SceneGame : public SceneBase
 {
@@ -40,6 +42,8 @@ private:
 	Stage* stage_;
 
 	Neko* neko_;
+
+	ItemManager* itemManager_;
 
 	int count_;
 };
