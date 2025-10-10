@@ -4,32 +4,27 @@
 #include <DxLib.h>
 #include <cmath>
 
-Toy::Toy()
+Toy::Toy(void)
 {
-    type_ = ItemType::Toy;
-    graphHandle_ = -1;
     lifeTimer_ = 0;
     maxLifeTime_ = 600; // 約10秒で消える（=ゲームオーバー判定）
 }
 
-void Toy::Init()
+Toy::~Toy(void)
+{
+}
+
+void Toy::Init(void)
 {
     // 餌画像を読み込み
-    graphHandle_ = LoadGraph((Application::PATH_IMAGE + "5721.png").c_str());
-    active_ = false;
+    img_ = LoadGraph((Application::PATH_IMAGE + "5721.png").c_str());
+    flag_ = false;
 }
 
-void Toy::Spawn(const VECTOR& pos)
+void Toy::Update(void)
 {
-    ItemBase::Spawn(pos);
-    lifeTimer_ = 0;
-}
+    if (!flag_) return;
 
-void Toy::Update()
-{
-    if (!active_) return;
-
-    animFrame_++;
     lifeTimer_++;
 
     // ふわふわ上下に揺れる演出
@@ -38,21 +33,26 @@ void Toy::Update()
     // 時間経過で自動的に非アクティブ化してもOK（管理側がチェックしても可）
     if (lifeTimer_ > maxLifeTime_)
     {
-        active_ = false;
+        flag_ = false;
     }
 }
 
-void Toy::Draw()
+void Toy::Draw(void)
 {
-    if (!active_ || graphHandle_ == -1) return;
+    if (!flag_ || img_ == -1) return;
 
-    DrawGraph((int)pos_.x, (int)pos_.y, graphHandle_, TRUE);
+    DrawGraph(pos_.x, pos_.y, img_, TRUE);
 
     // デバッグ表示（残り寿命など）
     DrawFormatString((int)pos_.x, (int)pos_.y - 16, GetColor(255, 255, 255), "Life:%d", maxLifeTime_ - lifeTimer_);
 }
 
-bool Toy::IsExpired() const
+void Toy::Release(void)
 {
-    return (lifeTimer_ > maxLifeTime_);
+    DeleteGraph(img_);
+}
+
+bool Toy::GetFlag(void) const
+{
+    return flag_;
 }

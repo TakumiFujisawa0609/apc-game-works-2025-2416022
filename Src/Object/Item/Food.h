@@ -1,22 +1,32 @@
 #pragma once
-#include "ItemBase.h"
-
+#include <DxLib.h>
 //---------------------------------------------
 // 餌アイテムクラス
 //---------------------------------------------
-class Food : public ItemBase
+class Food
 {
-private:
-    int lifeTimer_;   // 存在してからの経過時間
-    int maxLifeTime_; // 存在できる最大時間（超えるとゲームオーバー）
-
 public:
-    Food();
-    ~Food() override = default;
 
-    void Init() override;                   // 初期化（画像ロードなど）
-    void Update() override;                 // アニメーション・時間制御
-    void Draw() override;                   // 描画処理
-    void Spawn(const VECTOR& pos) override; // 生成時の設定
-    bool IsExpired() const;                 // ゲームオーバー判定
+    static constexpr int FOOD_WID = 64;
+    static constexpr int FOOD_HIG = 64;
+
+    Food(void);
+    ~Food(void);
+
+    void Init(void) ;                   // 初期化（画像ロードなど）
+    void Update(void);                 // アニメーション・時間制御
+    void Draw(void) ;                   // 描画処理
+    void Release(void);
+
+    bool GetFlag(void) const;
+
+private:
+
+    int img_;
+
+    VECTOR pos_;
+    bool flag_;
+
+    int count_;
+
 };

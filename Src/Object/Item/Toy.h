@@ -1,22 +1,29 @@
 #pragma once
-#include "ItemBase.h"
+#include <DxLib.h>
 
 //---------------------------------------------
 // 餌アイテムクラス
 //---------------------------------------------
-class Toy : public ItemBase
+class Toy
 {
+public:
+    Toy(void);
+    ~Toy(void);
+
+    void Init(void);                   // 初期化（画像ロードなど）
+    void Update(void);                 // アニメーション・時間制御
+    void Draw(void);                   // 描画処理
+    void Release(void);
+
+    bool GetFlag(void) const;
+
 private:
+
+    int img_;
+
+    VECTOR pos_;
+    bool flag_;
+
     int lifeTimer_;   // 存在してからの経過時間
     int maxLifeTime_; // 存在できる最大時間（超えるとゲームオーバー）
-
-public:
-    Toy();
-    ~Toy() override = default;
-
-    void Init() override;                   // 初期化（画像ロードなど）
-    void Update() override;                 // アニメーション・時間制御
-    void Draw() override;                   // 描画処理
-    void Spawn(const VECTOR& pos) override; // 生成時の設定
-    bool IsExpired() const;                 // ゲームオーバー判定
 };

@@ -10,7 +10,7 @@
 
 class Stage;
 class Neko;
-class ItemManager;
+class Food;
 
 class SceneGame : public SceneBase
 {
@@ -43,7 +43,7 @@ private:
 
 	Neko* neko_;
 
-	ItemManager* itemManager_;
+	Food* food_;
 
 	int count_;
 };

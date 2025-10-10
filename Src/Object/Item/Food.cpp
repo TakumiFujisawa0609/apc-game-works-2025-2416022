@@ -4,55 +4,53 @@
 #include <DxLib.h>
 #include <cmath>
 
-Food::Food()
+Food::Food(void)
 {
-    type_ = ItemType::Food;
-    graphHandle_ = -1;
-    lifeTimer_ = 0;
-    maxLifeTime_ = 600; // 約10秒で消える（=ゲームオーバー判定）
+    
 }
 
-void Food::Init()
+Food::~Food(void)
+{
+}
+
+void Food::Init(void)
 {
     // 餌画像を読み込み
-    graphHandle_ = LoadGraph((Application::PATH_IMAGE + "5721.png").c_str());
-    active_ = false;
+    img_ = LoadGraph((Application::PATH_ITEM + "5721.png").c_str());
+    
+    pos_.x = 300;
+    pos_.y = 600;
+
+    flag_ = false;
 }
 
-void Food::Spawn(const VECTOR& pos)
+void Food::Update(void)
 {
-    ItemBase::Spawn(pos);
-    lifeTimer_ = 0;
+    count_++;
+      if (rand() % 100 < 20) // 5% の確率で出現
+      {
+          flag_ = true;
+          count_ = 0;
+      }
 }
 
-void Food::Update()
+void Food::Draw(void)
 {
-    if (!active_) return;
 
-    animFrame_++;
-    lifeTimer_++;
+    DrawRotaGraph(pos_.x, pos_.y, 0.03, 0.0, img_, true);
 
-    // ふわふわ上下に揺れる演出
-    //pos_.y += sinf(animFrame_ * 0.05f) * 0.3f;
+    DrawBox(pos_.x - FOOD_WID / 2, pos_.y - FOOD_HIG / 2,
+        pos_.x + FOOD_WID / 2, pos_.y + FOOD_HIG / 2,
+        GetColor(0, 255, 0), false);
 
-    // 時間経過で自動的に非アクティブ化してもOK（管理側がチェックしても可）
-    if (lifeTimer_ > maxLifeTime_)
-    {
-        active_ = false;
-    }
 }
 
-void Food::Draw()
+void Food::Release(void)
 {
-    if (!active_ || graphHandle_ == -1) return;
-
-    DrawGraph((int)pos_.x, (int)pos_.y, graphHandle_, TRUE);
-
-    // デバッグ表示（残り寿命など）
-     DrawFormatString((int)pos_.x, (int)pos_.y - 16, GetColor(255,255,255), "Life:%d", maxLifeTime_ - lifeTimer_);
+    DeleteGraph(img_);
 }
 
-bool Food::IsExpired() const
+bool Food::GetFlag(void) const
 {
-    return (lifeTimer_ > maxLifeTime_);
+    return flag_;
 }

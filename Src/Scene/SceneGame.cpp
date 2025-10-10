@@ -4,7 +4,7 @@
 
 #include "../Object/Stage/Stage.h"
 #include "../Object/Neko/Neko.h"
-#include "../Object/Item/ItemManager.h"
+#include "../Object/Item/Food.h"
 #include"../Common/Easing.h"
 #include"../Manager/Generic/SceneManager.h"
 #include"../Manager/Generic/InputManager.h"
@@ -13,7 +13,7 @@ SceneGame::SceneGame(void)
 {
 	neko_ = nullptr;
 	stage_ = nullptr;
-	itemManager_ = nullptr;
+	food_ = nullptr;
 }
 
 void SceneGame::Init(void)
@@ -25,8 +25,8 @@ void SceneGame::Init(void)
 	neko_ = new Neko();
 	neko_->Init();
 
-	itemManager_ = new ItemManager();
-	itemManager_->Init();
+	food_ = new Food();
+	food_->Init();
 
 	count_ = 0;
 }
@@ -40,7 +40,7 @@ void SceneGame::Update(void)
 
 	neko_->Update();
 
-	itemManager_->Update();
+	food_->Update();
 
 	//count_++;
 	if (count_ >= 500)
@@ -62,7 +62,7 @@ void SceneGame::Draw(void)
 
 	neko_->Draw();
 
-	itemManager_->Draw();
+	food_->Draw();
 
 #ifdef _DEBUG
 	//デバック表示
@@ -79,8 +79,8 @@ void SceneGame::Release(void)
 	stage_->Release();
 	delete stage_;
 
-	itemManager_->RemoveAll();
-	delete itemManager_;
+	food_->Release();
+	delete food_;
 }
 
 void SceneGame::DrawDebug(void)
