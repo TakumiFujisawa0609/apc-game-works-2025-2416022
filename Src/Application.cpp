@@ -1,7 +1,6 @@
 #include"Application.h"
 
 #include<DxLib.h>
-#include<EffekseerForDXLib.h>
 
 #include "Manager/Generic/InputManager.h"
 #include "Manager/Generic/SceneManager.h"
@@ -38,6 +37,9 @@ void Application::Init(void)
 {
 	//アプリケーションの初期設定
 	SetWindowText("Neko_to_Shikou_seyo");
+
+	// マウスを表示状態にする
+	SetMouseDispFlag(TRUE);
 	
 #ifdef _DEBUG
 	//ウィンドウのサイズ
@@ -62,8 +64,6 @@ void Application::Init(void)
 		return;
 	}
 
-	//エフェクシアの初期化
-	InitEffekseer();
 
 	// キー制御初期化
 	SetUseDirectInputFlag(true);
@@ -139,8 +139,6 @@ void Application::Destroy(void)
 	InputManager::GetInstance().Destroy();
 	SceneManager::GetInstance().Destroy();
 
-	//エフェクシアの終了
-	Effkseer_End();
 
 	//DXLibの終了
 	if (DxLib_End() == -1)
@@ -162,16 +160,6 @@ bool Application::IsReleaseFail(void) const
 	return isReleaseFail_;
 }
 
-void Application::InitEffekseer(void)
-{
-	if (Effekseer_Init(8000) == 1)
-	{
-		DxLib_End();
-	}
-	SetChangeScreenModeGraphicsSystemResetFlag(false);
-	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
-
-}
 
 Application::Application(void)
 {

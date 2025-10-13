@@ -4,6 +4,10 @@
 
 #include"../Manager/Generic/SceneManager.h"
 #include"../Manager/Generic/InputManager.h"
+#include "../Application.h"
+
+#include <cmath>
+#include <cstdlib>
 
 SceneGameClear::SceneGameClear(void)
 {
@@ -11,14 +15,17 @@ SceneGameClear::SceneGameClear(void)
 
 void SceneGameClear::Init(void)
 {
-
+	count_ = 0;
 }
 
 void SceneGameClear::Update(void)
 {
-
-	//シーン遷移(デバッグ)
-	if (InputManager::GetInstance().IsTrgDown(KEY_INPUT_SPACE))
+	
+	count_++;
+	//シーン遷移
+	if (
+		
+	InputManager::GetInstance().IsTrgMouseLeft())
 	{
 
 		//シーン遷移
@@ -31,7 +38,16 @@ void SceneGameClear::Update(void)
 
 void SceneGameClear::Draw(void)
 {
-	DrawFormatString(0, 0, 0xffffff, "ゲームクリア");
+
+	
+	DrawBox(0, 0, Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, GetColor(255, 255, 255), TRUE);
+
+	DrawFormatString(Application::SCREEN_SIZE_X/2-20, Application::SCREEN_SIZE_Y / 2, 0x000000, "ゲームクリア");
+
+	
+	if (count_ >= 120) {
+		DrawFormatString(0, Application::SCREEN_SIZE_Y-20, 0x000000, "クリックでタイトルへ");
+	}
 }
 
 void SceneGameClear::Release(void)

@@ -20,11 +20,12 @@ void ItemBase::Init(TYPE type,int img)
 	SetParam();
 
 	// ‰Šúó‘Ô
-	ChangeState(STATE::STANDBY);
+	//ChangeState(STATE::STANDBY);
 }
 
 void ItemBase::Update(void)
 {
+	
 }
 
 void ItemBase::Draw(void)

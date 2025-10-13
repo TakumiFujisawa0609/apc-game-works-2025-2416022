@@ -75,8 +75,6 @@ private:
 	//フレームレート制御
 	Fps* fps_;
 
-	//エフェクシアの初期化
-	void InitEffekseer(void);
 
 	//デフォルトコンストラクタ private にして
 	//外部から生成できない様にする

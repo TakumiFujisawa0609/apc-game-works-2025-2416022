@@ -31,5 +31,8 @@ private:
 
 	//描画処理(デバッグ)
 	void DrawDebug(void);
+
+	int count_;
+
 };
 

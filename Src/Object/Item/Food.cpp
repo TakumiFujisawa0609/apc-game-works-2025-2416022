@@ -29,8 +29,9 @@ void Food::Update(void)
     count_++;
       if (rand() % 100 < 20) // 5% ‚ÌŠm—¦‚ÅoŒ»
       {
-          flag_ = true;
-          count_ = 0;
+          DrawBox(pos_.x - FOOD_WID / 2, pos_.y - FOOD_HIG / 2,
+              pos_.x + FOOD_WID / 2, pos_.y + FOOD_HIG / 2,
+              GetColor(255, 0, 0), false);
       }
 }
 
@@ -39,9 +40,9 @@ void Food::Draw(void)
 
     DrawRotaGraph(pos_.x, pos_.y, 0.03, 0.0, img_, true);
 
-    DrawBox(pos_.x - FOOD_WID / 2, pos_.y - FOOD_HIG / 2,
+    /*DrawBox(pos_.x - FOOD_WID / 2, pos_.y - FOOD_HIG / 2,
         pos_.x + FOOD_WID / 2, pos_.y + FOOD_HIG / 2,
-        GetColor(0, 255, 0), false);
+        GetColor(0, 255, 0), false);*/
 
 }
 

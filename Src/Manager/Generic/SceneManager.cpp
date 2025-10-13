@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <DxLib.h>
-#include<EffekseerForDXLib.h>
 #include<cassert>
 
 #include "../../Scene/SceneTitle.h"
@@ -105,6 +104,15 @@ void SceneManager::Destroy(void)
 
 void SceneManager::ChangeScene(SCENE_ID nextId)
 {
+	// ゲームオーバー時のみフェードせずに即遷移
+	if (nextId == SCENE_ID::GAMEOVER)
+	{
+		DoChangeScene(nextId);
+		fader_->SetFade(Fader::STATE::NONE);
+		isSceneChanging_ = false;
+		return;
+	}
+
 	// フェード処理が終わってからシーンを変える場合もあるため、
 	// 遷移先シーンをメンバ変数に保持
 	waitSceneId_ = nextId;

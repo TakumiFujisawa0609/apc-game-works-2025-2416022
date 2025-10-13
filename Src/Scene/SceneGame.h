@@ -11,6 +11,7 @@
 class Stage;
 class Neko;
 class Food;
+class Wall;
 
 class SceneGame : public SceneBase
 {
@@ -44,6 +45,8 @@ private:
 	Neko* neko_;
 
 	Food* food_;
+
+	Wall* wall_;
 
 	int count_;
 };

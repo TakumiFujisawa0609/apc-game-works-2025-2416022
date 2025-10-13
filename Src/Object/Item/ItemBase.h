@@ -38,7 +38,7 @@ public:
 	void Release(void);
 
 	// ó‘Ô‘JˆÚ
-	void ChangeState(STATE state);
+	//void ChangeState(STATE state);
 
 protected:
 
@@ -57,7 +57,7 @@ protected:
 	// ƒpƒ‰ƒ[ƒ^İ’è(ƒˆ‰¼‘zŠÖ”)
 	virtual void SetParam(void) = 0;
 
-	// ó‘Ô‘JˆÚ
+	/*// ó‘Ô‘JˆÚ
 	virtual void ChangeStandby(void);
 	virtual void ChangeAttack(void);
 	virtual void ChangeHitReact(void);
@@ -76,6 +76,6 @@ protected:
 	virtual void DrawAttack(void);
 	virtual void DrawHitReact(void);
 	virtual void DrawDeadReact(void);
-	virtual void DrawEnd(void);
+	virtual void DrawEnd(void);*/
 };
 
