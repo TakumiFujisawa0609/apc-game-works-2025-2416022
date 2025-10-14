@@ -40,14 +40,9 @@ void Application::Init(void)
 
 	// マウスを表示状態にする
 	SetMouseDispFlag(TRUE);
-	
-#ifdef _DEBUG
+
 	//ウィンドウのサイズ
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
-#else
-	//ウィンドウのサイズ
-	SetGraphMode(DEFA_SCREEN_SIZE_X, DEFA_SCREEN_SZIE_Y, 32);
-#endif // _DEBUG
 	
 	ChangeWindowMode(true);
 
@@ -105,7 +100,7 @@ void Application::Run(void)
 		{
 			int id;
 
-			id = MessageBox(NULL, TEXT("ゲームを終了します。よろしいですか？"), TEXT(""), MB_YESNO | MB_ICONQUESTION);
+			id = MessageBox(NULL, TEXT("ゲームを終了します。よろしいですか？"), TEXT("ゲーム終了"), MB_YESNO | MB_ICONQUESTION);
 
 			if (id == IDYES)
 			{

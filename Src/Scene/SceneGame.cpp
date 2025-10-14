@@ -62,7 +62,7 @@ void SceneGame::Update(void)
 
 void SceneGame::Draw(void)
 {
-	DrawFormatString(0, 0, 0xffffff, "ゲームシーンです。時間経過でシーン遷移します。");
+	DrawFormatString(0, 0, 0xffffff, "ゲームシーンです。異常を発見したらクリックで対処してください。");
 
 	// ステージ描画
 	stage_->Draw();

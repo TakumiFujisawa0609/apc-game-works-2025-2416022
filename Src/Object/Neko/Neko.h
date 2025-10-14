@@ -1,5 +1,9 @@
 #pragma once
+
+#include "../../Object/Item/Food.h"
 #include <DxLib.h>
+
+class Food;
 
 class Neko
 {
@@ -81,5 +85,7 @@ private:
 	virtual void DrawAct(void);
 	virtual void DrawGameover(void);
 	virtual void DrawEnd(void);
+
+	Food* food_;
 };
 

@@ -42,7 +42,7 @@ void SceneGameClear::Draw(void)
 	
 	DrawBox(0, 0, Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, GetColor(255, 255, 255), TRUE);
 
-	DrawFormatString(Application::SCREEN_SIZE_X/2-20, Application::SCREEN_SIZE_Y / 2, 0x000000, "ゲームクリア");
+	DrawFormatString(Application::SCREEN_SIZE_X/2-80, Application::SCREEN_SIZE_Y / 2, 0x000000, "ゲームクリア");
 
 	
 	if (count_ >= 120) {

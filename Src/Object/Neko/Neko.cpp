@@ -209,15 +209,42 @@ void Neko::ChangeEnd(void)
 
 void Neko::UpdateStandby(void)
 {
+    
 }
 
 void Neko::UpdateMove(void)
 {
+    /*// --- 食べ物が有効な場合はその方向へ向かう ---
+    if (food_ && food_->GetFlag())
+    {
+        const VECTOR& foodPos = food_->GetPos();  // Food側にGetPos()があると想定
+
+        float dx = foodPos.x - pos_.x;
+        float dy = foodPos.y - pos_.y;
+        float len = sqrtf(dx * dx + dy * dy);
+
+        if (len > 0.1f)
+        {
+            float speed = 1.0f;
+            pos_.x += dx / len * speed;
+            pos_.y += dy / len * speed;
+        }
+        else
+        {
+            // 食べ物に到達したときの処理
+            food_->SetFlag(false); // 例: 食べ物を消す
+            isMoving_ = false;     // 止まる
+        }
+
+        return; // ← 食べ物に向かっている間は通常のランダム移動を行わない
+    }*/
+
     Move();
 }
 
 void Neko::UpdateEat(void)
 {
+   
 }
 
 void Neko::UpdateAct(void)

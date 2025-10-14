@@ -153,6 +153,7 @@ void Wall::Release(void)
     DeleteGraph(img_);
     DeleteGraph(img2_);
     DeleteGraph(img3_);
+    DeleteGraph(img4_);
     spawnPositions_.clear();
 }
 

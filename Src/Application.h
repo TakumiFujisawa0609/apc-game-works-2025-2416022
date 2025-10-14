@@ -13,8 +13,8 @@ public:
 #else
 
 	//ウインドサイズ
-	static constexpr int SCREEN_SIZE_X = 800;
-	static constexpr int SCREEN_SIZE_Y = 600;
+	static constexpr int SCREEN_SIZE_X = 1024;
+	static constexpr int SCREEN_SIZE_Y = 768;
 #endif // DEBUG
 
 	//フルスクリーンサイズ
