@@ -40,6 +40,8 @@ public:
 	// ó‘Ô‘JˆÚ
 	//void ChangeState(STATE state);
 
+	bool GetIsMouseOver() const;
+
 protected:
 
 	// ó‘Ô

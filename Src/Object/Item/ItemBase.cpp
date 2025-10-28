@@ -35,3 +35,9 @@ void ItemBase::Draw(void)
 void ItemBase::Release(void)
 {
 }
+
+bool ItemBase::GetIsMouseOver() const
+{
+	return false;
+}
+

@@ -22,7 +22,10 @@ public:
     void Draw(void);                   // 描画処理
     void Release(void);
 
-    bool GetFlag(void) const;
+    bool GetFlagImg(void) const;
+    bool GetIsMouseOver() const;
+
+	bool IsGameOver() const { return isGameOver_; }
 
 private:
 
@@ -44,6 +47,9 @@ private:
 
     bool isClicked_ = false;
 
+    bool isMouseOver_;
+
+	bool isGameOver_ = false;
 
     int count_;
 
@@ -59,7 +65,6 @@ private:
 
     int img2StartCount_ = 600;          // img2_ 出現開始カウント（初期）
     float img2StartMultiplier_ = 1.0f;  // 再表示ごとに短くする係数
-
 
     std::vector<VECTOR> spawnPositions_;
 

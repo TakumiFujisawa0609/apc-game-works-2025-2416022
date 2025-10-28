@@ -23,12 +23,18 @@ public:
     bool GetFlag(void) const;
     void SetFlag(bool flag) { flag_ = flag; }
 
+    bool GetIsMouseOver() const;
+
+	bool IsGameOver() const { return isGameOver_; }
+
 private:
 
     int img_;
     int img2_;
 
     VECTOR pos_;
+    bool flagImg_;
+
     bool flag_;
 
     int count_;
@@ -39,6 +45,12 @@ private:
     int spawnTimerBase_ = 180;       // img_ 初期再表示時間（フレーム）
     float spawnTimerMultiplier_ = 1.0f; // img_ 再表示時間短縮係数
 
+    int activeTimer_;        // 出現中の累積時間（リセットされない）
+    const int activeLimit_ = 600; // 合計10秒（60fps換算）
+    bool isGameOver_;
+
     int flagSpawn_;
+
+    bool isMouseOver_;
 
 };

@@ -13,8 +13,13 @@
 
 
 
-Wall::Wall(void) {}
-Wall::~Wall(void) {}
+Wall::Wall(void) 
+{
+}
+
+Wall::~Wall(void) 
+{
+}
 
 void Wall::Init(void)
 {
@@ -30,6 +35,8 @@ void Wall::Init(void)
 
     flag_ = false;
 
+    isMouseOver_ = false;
+
     //flagImg_ = true;    // ← img_ を初期表示させる
     flagSpawn_ = false;
     spawnTimer_ = 180 + rand() % 300; // 初回3〜8秒
@@ -43,12 +50,22 @@ void Wall::Init(void)
 
 void Wall::Update()
 {
+    // --- 毎フレーム、マウスが壁の上にあるか判定する ---
+    {
+        Vector2 mousePos = InputManager::GetInstance().GetMousePos();
+        float halfW = WALL_WID / 2.0f;
+        float halfH = WALL_HIG / 2.0f;
+
+        isMouseOver_ =
+            (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
+                mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
+    }
 
     if (flagImg_ && InputManager::GetInstance().IsTrgMouseLeft())
     {
         Vector2 mousePos = InputManager::GetInstance().GetMousePos();
-        float halfW = WALL_WID * 0.3f / 2.0f;
-        float halfH = WALL_HIG * 0.3f / 2.0f;
+        float halfW = WALL_WID / 2.0f;
+        float halfH = WALL_HIG / 2.0f;
 
         if (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
             mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH)
@@ -111,8 +128,7 @@ void Wall::Update()
         // ゲームオーバー判定
         if ((int)spawnPositions_.size() >= GAMEOVER_THRESHOLD)
         {
-            SceneManager::GetInstance().ChangeScene(SceneManager::SCENE_ID::GAMEOVER);
-            return;
+            isGameOver_ = true;
         }
     }
 
@@ -122,10 +138,18 @@ void Wall::Update()
 
 void Wall::Draw(void)
 {
+
+    float halfW = WALL_WID / 2.0f;
+    float halfH = WALL_HIG / 2.0f;
+
     // --- img_ の描画 ---
     if (flagImg_)
     {
-        DrawRotaGraph(pos_.x, pos_.y, 0.3, 0.0, img_, true);
+        DrawRotaGraph(pos_.x+10, pos_.y+10, 0.3, 0.0, img_, true);
+        DrawBox(
+            pos_.x - halfW, pos_.y - halfH,
+            pos_.x + halfW, pos_.y + halfH,
+            GetColor(0, 0, 255), false);
     }
 
     // --- img2_ の描画 ---
@@ -146,6 +170,15 @@ void Wall::Draw(void)
             Application::SCREEN_SIZE_Y / 2,
             1.0, 0.0, img3_, true);
     }*/
+
+    
+
+    int color = isMouseOver_ ? GetColor(255, 0, 0) : GetColor(0, 255, 0);
+
+    DrawBox(
+        pos_.x - halfW, pos_.y - halfH,
+        pos_.x + halfW, pos_.y + halfH,
+        color, false);
 }
 
 void Wall::Release(void)
@@ -157,7 +190,12 @@ void Wall::Release(void)
     spawnPositions_.clear();
 }
 
-bool Wall::GetFlag(void) const
+bool Wall::GetFlagImg(void) const
 {
-    return flag_;
+    return flagImg_;
+}
+
+bool Wall::GetIsMouseOver() const
+{
+    return isMouseOver_;
 }

@@ -12,6 +12,7 @@ class Stage;
 class Neko;
 class Food;
 class Wall;
+class Message;
 
 class SceneGame : public SceneBase
 {
@@ -21,7 +22,7 @@ public:
 	SceneGame(void);
 
 	//デストラクタ
-	~SceneGame(void) = default;
+	~SceneGame() override = default;
 
 	//初期化処理
 	void Init(void)override;
@@ -48,6 +49,9 @@ private:
 
 	Wall* wall_;
 
+	Message* message_;
+
 	int count_;
+	bool isEnd_;
 };
 
