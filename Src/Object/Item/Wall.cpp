@@ -27,7 +27,7 @@ void Wall::Init(void)
 
     img_ = LoadGraph((Application::PATH_ITEM + "nc73263_穴.png").c_str());
     img2_ = LoadGraph((Application::PATH_ITEM + "nc257030.png").c_str());
-    img3_ = LoadGraph((Application::PATH_ITEM + "nc296608.png").c_str());
+    
     img4_ = LoadGraph((Application::PATH_ITEM + "nc407592.png").c_str());
 
     pos_.x = 600;
@@ -163,13 +163,7 @@ void Wall::Draw(void)
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 
-    // --- ゲームオーバー画像 ---
-   /*if ()
-    {
-        DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
-            Application::SCREEN_SIZE_Y / 2,
-            1.0, 0.0, img3_, true);
-    }*/
+    
 
     
 

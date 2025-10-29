@@ -89,6 +89,11 @@ void Neko::Release(void)
 	DeleteGraph(img_);
 }
 
+void Neko::SetFood(Food* food)
+{
+    food_ = food;
+}
+
 void Neko::Move(void)
 {
     // タイマー減少
@@ -184,6 +189,7 @@ void Neko::ChangeState(STATE state)
 
 void Neko::ChangeStandby(void)
 {
+    standbyTimer_ = 120; // 2秒待つ
 }
 
 void Neko::ChangeMove(void)
@@ -209,43 +215,58 @@ void Neko::ChangeEnd(void)
 
 void Neko::UpdateStandby(void)
 {
-    
+	if (--standbyTimer_ <= 0)
+	{
+		ChangeState(STATE::MOVE);
+		//return;
+	}
 }
 
 void Neko::UpdateMove(void)
 {
-    /*// --- 食べ物が有効な場合はその方向へ向かう ---
+    // --- Foodが有効なら、EAT状態に移行 ---
     if (food_ && food_->GetFlag())
     {
-        const VECTOR& foodPos = food_->GetPos();  // Food側にGetPos()があると想定
-
-        float dx = foodPos.x - pos_.x;
-        float dy = foodPos.y - pos_.y;
-        float len = sqrtf(dx * dx + dy * dy);
-
-        if (len > 0.1f)
-        {
-            float speed = 1.0f;
-            pos_.x += dx / len * speed;
-            pos_.y += dy / len * speed;
-        }
-        else
-        {
-            // 食べ物に到達したときの処理
-            food_->SetFlag(false); // 例: 食べ物を消す
-            isMoving_ = false;     // 止まる
-        }
-
-        return; // ← 食べ物に向かっている間は通常のランダム移動を行わない
-    }*/
+        ChangeState(STATE::EAT);
+        return;
+    }
 
     Move();
 }
 
 void Neko::UpdateEat(void)
 {
-   
+    if (!food_ || !food_->GetFlag())
+    {
+        ChangeState(STATE::MOVE);
+        return;
+    }
+
+    const VECTOR& foodPos = food_->GetPos();
+    float dx = foodPos.x - pos_.x;
+    float dy = foodPos.y - pos_.y;
+    float len = sqrtf(dx * dx + dy * dy);
+
+    if (len > 5.0f) // ← 少し余裕を持たせる
+    {
+        float speed = 1.5f;
+        pos_.x += dx / len * speed;
+        pos_.y += dy / len * speed;
+    }
+    else
+    {
+        // --- 食べ物に到達 ---
+        pos_.x = foodPos.x;
+        pos_.y = foodPos.y;
+        moveDirX_ = 0.0f;
+        moveDirY_ = 0.0f;
+        isMoving_ = false;
+
+        food_->SetFlag(false);
+        ChangeState(STATE::STANDBY);
+    }
 }
+
 
 void Neko::UpdateAct(void)
 {

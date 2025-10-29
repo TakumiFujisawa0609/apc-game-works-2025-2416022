@@ -18,6 +18,13 @@ class SceneGame : public SceneBase
 {
 public:
 
+	enum class GameOverSource
+	{
+		NONE,
+		FOOD,
+		WALL
+	} gameOverSource_ = GameOverSource::NONE; // ★どこでゲームオーバーになったかを記録
+
 	//コンストラクタ
 	SceneGame(void);
 
@@ -36,6 +43,10 @@ public:
 	//解放処理
 	void Release(void)override;
 
+	void StartGameOver(GameOverSource source);
+
+	void DrawInfo(void);
+
 private:
 
 	//描画(デバッグ)
@@ -51,7 +62,18 @@ private:
 
 	Message* message_;
 
+	int fontHandle;
+
+	int img3_;
+
 	int count_;
 	bool isEnd_;
+
+	bool isGameOver_ = false;
+	int gameOverTimer_ = 0;
+	const int GAMEOVER_WAIT_ = 120; // 約2秒待機
+
+	
+
 };
 

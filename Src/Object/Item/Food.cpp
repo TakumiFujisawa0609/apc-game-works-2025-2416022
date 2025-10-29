@@ -1,4 +1,4 @@
-
+ï»¿
 #include "Food.h"
 #include "../../Application.h"
 #include "../../Manager/Generic/InputManager.h"
@@ -17,7 +17,7 @@ Food::~Food(void)
 
 void Food::Init(void)
 {
-    // ‰a‰æ‘œ‚ğ“Ç‚İ‚İ
+    // é¤Œç”»åƒã‚’èª­ã¿è¾¼ã¿
     img_ = LoadGraph((Application::PATH_ITEM + "5721.png").c_str());
     
     pos_.x = 300;
@@ -26,20 +26,20 @@ void Food::Init(void)
     flagImg_ = false;
     isMouseOver_ = false;
 
-    spawnTimerBase_ = 300;        // Šî–{Ä•\¦ŠÔ
-    spawnTimerMultiplier_ = 1.0f; // ‰Šú”{—¦
+    spawnTimerBase_ = 300;        // åŸºæœ¬å†è¡¨ç¤ºæ™‚é–“
+    spawnTimerMultiplier_ = 1.0f; // åˆæœŸå€ç‡
     spawnInterval_ = 300;
     spawnTimer_ = 180 + rand() % 300;
     count_ = 0;
 
-    // —İÏŠÔƒJƒEƒ“ƒ^
+    // ç´¯ç©æ™‚é–“ã‚«ã‚¦ãƒ³ã‚¿
     activeTimer_ = 0;
     isGameOver_ = false;
 }
 
 void Food::Update()
 {
-    // --- –ˆƒtƒŒ[ƒ€Aƒ}ƒEƒX‚ªã‚É‚ ‚é‚©”»’è‚·‚é ---
+    // --- æ¯ãƒ•ãƒ¬ãƒ¼ãƒ ã€ãƒã‚¦ã‚¹ãŒä¸Šã«ã‚ã‚‹ã‹åˆ¤å®šã™ã‚‹ ---
     {
         Vector2 mousePos = InputManager::GetInstance().GetMousePos();
         float halfW = FOOD_WID / 2.0f;
@@ -50,7 +50,7 @@ void Food::Update()
                 mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
     }
 
-    // --- img_ ƒNƒŠƒbƒNˆ— ---
+    // --- img_ ã‚¯ãƒªãƒƒã‚¯å‡¦ç† ---
     if (flagImg_ && InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_)
     {
         Vector2 mousePos = InputManager::GetInstance().GetMousePos();
@@ -60,29 +60,28 @@ void Food::Update()
         if (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
             mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH)
         {
-            // img_ ‚ğ”ñ•\¦‚É‚µ‚ÄÄ•\¦ƒ^ƒCƒ}[‚ğİ’è
+            // img_ ã‚’éè¡¨ç¤ºã«ã—ã¦å†è¡¨ç¤ºã‚¿ã‚¤ãƒãƒ¼ã‚’è¨­å®š
             flagImg_ = false;
 
             activeTimer_ = 0;
 
-            // Ÿ‚ÌÄ•\¦‚Ü‚Å‚Ìƒ‰ƒ“ƒ_ƒ€ŠÔ‚ğ’Zk
-            int randomOffset = rand() % 300;
-            spawnTimer_ = (int)((spawnTimerBase_ + randomOffset) / spawnTimerMultiplier_);
+            // å®Œå…¨ãƒ©ãƒ³ãƒ€ãƒ ãªå†å‡ºç¾ã‚¿ã‚¤ãƒãƒ¼è¨­å®šï¼ˆä¾‹ï¼š3ã€œ8ç§’ï¼‰
+            spawnTimer_ = 1200 + rand() % 300; // 180ã€œ480ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆç´„3ã€œ8ç§’ï¼‰
 
-            // Ä•\¦‚²‚Æ‚É‰Á‘¬
-            spawnTimerMultiplier_ *= 1.5f;
+            // å†è¡¨ç¤ºé–“éš”ã‚’å›ºå®šï¼ˆçŸ­ç¸®ã—ãªã„ï¼‰
+            spawnTimerMultiplier_ = 1.0f;
 
             count_ = 0;
             return;
         }
     }
 
-    // •\¦’†‚È‚ç—İÏƒ^ƒCƒ}[‰ÁZ
+    // è¡¨ç¤ºä¸­ãªã‚‰ç´¯ç©ã‚¿ã‚¤ãƒãƒ¼åŠ ç®—
     if (flagImg_)
     {
         activeTimer_++;
 
-        // ‡ŒvŠÔ‚ª§ŒÀ‚ğ’´‚¦‚½‚çƒQ[ƒ€ƒI[ƒo[
+        // åˆè¨ˆæ™‚é–“ãŒåˆ¶é™ã‚’è¶…ãˆãŸã‚‰ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼
         if (activeTimer_ > activeLimit_)
         {
             isGameOver_ = true;
@@ -90,14 +89,14 @@ void Food::Update()
     }
     else
     {
-        // •\¦‚µ‚Ä‚¢‚È‚¢‚ÍoŒ»ƒ^ƒCƒ}[‚ğŒ¸‚ç‚·
+        // è¡¨ç¤ºã—ã¦ã„ãªã„æ™‚ã¯å‡ºç¾ã‚¿ã‚¤ãƒãƒ¼ã‚’æ¸›ã‚‰ã™
         if (--spawnTimer_ <= 0)
         {
             flagImg_ = true;
         }
     }
 
-    // --- spawnTimer_ ‚É‚æ‚è img_ Ä•\¦ ---
+    // --- spawnTimer_ ã«ã‚ˆã‚Š img_ å†è¡¨ç¤º ---
     if (!flagImg_)
     {
         spawnTimer_--;
@@ -118,7 +117,7 @@ void Food::Draw(void)
     float halfW = FOOD_WID / 2.0f;
     float halfH = FOOD_HIG / 2.0f;
 
-    // --- img_ ‚Ì•`‰æ ---
+    // --- img_ ã®æç”» ---
     if (flagImg_)
     {
         DrawRotaGraph(pos_.x , pos_.y, 0.05, 0.0, img_, true);

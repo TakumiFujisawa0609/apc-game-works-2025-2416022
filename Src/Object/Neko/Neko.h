@@ -4,6 +4,7 @@
 #include <DxLib.h>
 
 class Food;
+class Wall;
 
 class Neko
 {
@@ -42,6 +43,8 @@ public:
 	//‰ğ•úˆ—
 	void Release(void);
 
+	void SetFood(Food* food);
+
 private:
 
 	// ó‘Ô
@@ -58,6 +61,8 @@ private:
 	bool isMoving_;       // ˆÚ“®’†‚©’â~’†‚©
 
 	int moveTimer_;
+
+	int standbyTimer_ = 0;
 
 	void Move(void);
 
@@ -87,5 +92,7 @@ private:
 	virtual void DrawEnd(void);
 
 	Food* food_;
+
+	Wall* wall_;
 };
 
