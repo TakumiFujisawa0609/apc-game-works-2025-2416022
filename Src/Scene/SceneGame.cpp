@@ -6,6 +6,8 @@
 #include "../Object/Neko/Neko.h"
 #include "../Object/Item/Food.h"
 #include "../Object/Item/Wall.h"
+#include "../Object/Item/Toy.h"
+
 #include "../Object/Message.h"
 #include "../Common/Easing.h"
 #include "../Manager/Generic/SceneManager.h"
@@ -17,6 +19,8 @@ SceneGame::SceneGame(void)
 	stage_ = nullptr;
 	food_ = nullptr;
 	wall_ = nullptr;
+	toy_ = nullptr;
+
 	message_ = nullptr;
 	isEnd_ = false;
 }
@@ -35,6 +39,9 @@ void SceneGame::Init(void)
 	wall_ = new Wall();
 	wall_->Init();
 
+	toy_ = new Toy();
+	toy_->Init();
+
 	message_ = new Message();
 	message_->Init();
 
@@ -44,6 +51,9 @@ void SceneGame::Init(void)
 	neko_->SetFood(food_);
 
 	img3_ = LoadGraph((Application::PATH_ITEM + "nc296608.png").c_str());
+	img4_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str());
+	img5_ = LoadGraph((Application::PATH_STAGE + "白円.png").c_str());
+
 
 	fontHandle=CreateFontToHandle(NULL, 18, 9,-1);
 }
@@ -63,6 +73,9 @@ void SceneGame::Update(void)
 			break;
 		case GameOverSource::WALL:
 			wall_->Update();
+			break;
+		case GameOverSource::TOY:
+			toy_->Update();
 			break;
 		default:
 			break;
@@ -84,6 +97,8 @@ void SceneGame::Update(void)
 	neko_->Update();
 	food_->Update();
 	wall_->Update();
+	toy_->Update();
+
 	message_->Update();
 
 	// --- Food ゲームオーバー判定 ---
@@ -97,6 +112,13 @@ void SceneGame::Update(void)
 	if (wall_->IsGameOver())
 	{
 		StartGameOver(GameOverSource::WALL);
+		return;
+	}
+
+	// --- Toy ゲームオーバー判定 ---
+	if (toy_->IsGameOver())
+	{
+		StartGameOver(GameOverSource::TOY);
 		return;
 	}
 
@@ -118,6 +140,8 @@ void SceneGame::Draw(void)
 	neko_->Draw();
 	food_->Draw();
 	wall_->Draw();
+	toy_->Draw();
+
 	message_->Draw();
 
 	DrawInfo();
@@ -126,10 +150,21 @@ void SceneGame::Draw(void)
 	{
 		if (gameOverSource_ == GameOverSource::FOOD)
 		{
+			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0, 0.0, img4_, true);
+			
+
+			DrawRotaGraph(300,600,0.7, 0.0, img5_, true);
+
 			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "食べ過ぎには注意しましょう。ネコの管理もあなたの仕事です。", GetColor(255, 0, 0),fontHandle);
 		}
 		else if (gameOverSource_ == GameOverSource::WALL)
 		{
+			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0, 0.0, img4_, true);
+
 			// --- ゲームオーバー画像 ---
 		DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
 			Application::SCREEN_SIZE_Y / 2,
@@ -137,9 +172,18 @@ void SceneGame::Draw(void)
 		
 			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "壁の穴を放置してはいけません。修繕費用はあなた持ちです。", GetColor(255, 0, 0),fontHandle);
 		}
+		else if (gameOverSource_ == GameOverSource::TOY)
+		{
+			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0, 0.0, img4_, true);
+			// --- ゲームオーバー画像 ---
+			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0, 0.0, img5_, true);
+			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "ネコが怖がるようなものを放置してはいけません。", GetColor(255, 0, 0), fontHandle);
+		}
 	}
-
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
 #ifdef _DEBUG
 	DrawDebug();
@@ -148,6 +192,7 @@ void SceneGame::Draw(void)
 
 void SceneGame::Release(void)
 {
+
 	// ★ 二重解放防止
 	if (isEnd_) return;
 	isEnd_ = true;
@@ -178,6 +223,13 @@ void SceneGame::Release(void)
 		wall_->Release();
 		delete wall_;
 		wall_ = nullptr;
+	}
+
+	if (toy_)
+	{
+		toy_->Release();
+		delete toy_;
+		toy_ = nullptr;
 	}
 
 	if (message_)
@@ -213,6 +265,11 @@ void SceneGame::StartGameOver(GameOverSource source)
 			// PlaySoundMem(alarmSE, DX_PLAYTYPE_BACK);
 			break;
 
+		case GameOverSource::TOY:
+			// おもちゃ放置 → 「ネコが怖がっている」画像を出すとか
+			// PlaySoundMem(toyAlertSE, DX_PLAYTYPE_BACK);
+			break;
+
 		default:
 			break;
 		}
@@ -232,4 +289,10 @@ void SceneGame::DrawInfo()
 		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "餌が無くなっている。補充してあげよう。");
 	else if (food_->GetIsMouseOver())
 		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "餌はまだ残っている。");
+
+	if (toy_->GetFlag() && toy_->GetIsMouseOver())
+		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "おもちゃが放置されている…？");
+	else if (toy_->GetFlagShadow() && toy_->GetIsMouseOver())
+		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "…？");
+
 }

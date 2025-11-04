@@ -12,6 +12,8 @@ class Stage;
 class Neko;
 class Food;
 class Wall;
+class Toy;
+
 class Message;
 
 class SceneGame : public SceneBase
@@ -22,7 +24,8 @@ public:
 	{
 		NONE,
 		FOOD,
-		WALL
+		WALL,
+		TOY,
 	} gameOverSource_ = GameOverSource::NONE; // ★どこでゲームオーバーになったかを記録
 
 	//コンストラクタ
@@ -60,11 +63,15 @@ private:
 
 	Wall* wall_;
 
+	Toy* toy_;
+
 	Message* message_;
 
 	int fontHandle;
 
 	int img3_;
+	int img4_;
+	int img5_;
 
 	int count_;
 	bool isEnd_;
