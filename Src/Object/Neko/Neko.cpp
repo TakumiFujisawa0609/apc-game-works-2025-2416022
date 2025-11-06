@@ -1,6 +1,7 @@
 ﻿
 #include "../../Utility/Utility.h"
 #include "../../Application.h"
+#include "../../Manager/Generic/InputManager.h"
 #include "Neko.h"
 
 Neko::Neko(void)
@@ -20,12 +21,25 @@ void Neko::Init(void)
 
 	moveTimer_ = 0;
 	isMoving_ = false;
+	isMouseOver_ = false;
 
     ChangeState(STATE::MOVE);
 }
 
 void Neko::Update(void)
 {
+
+    // --- 毎フレーム、マウスが壁の上にあるか判定する ---
+    {
+        Vector2 mousePos = InputManager::GetInstance().GetMousePos();
+        float halfW = NEKO_WID / 2.0f;
+        float halfH = NEKO_HIG / 2.0f;
+
+        isMouseOver_ =
+            (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
+                mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
+    }
+
     switch (state_)
     {
     case Neko::STATE::NONE:
@@ -92,6 +106,11 @@ void Neko::Release(void)
 void Neko::SetFood(Food* food)
 {
     food_ = food;
+}
+
+bool Neko::GetIsMouseOver() const
+{
+    return isMouseOver_;
 }
 
 void Neko::Move(void)
@@ -249,7 +268,7 @@ void Neko::UpdateEat(void)
 
     if (len > 5.0f) // ← 少し余裕を持たせる
     {
-        float speed = 1.5f;
+        float speed = 2.0f;
         pos_.x += dx / len * speed;
         pos_.y += dy / len * speed;
     }
@@ -284,52 +303,64 @@ void Neko::DrawStandby(void)
 {
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 
-    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-        GetColor(255, 0, 0), false);
+    if (isMouseOver_) {
+        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+            GetColor(255, 0, 0), false);
+    }
 }
 
 void Neko::DrawMove(void)
 {
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 
-    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-        GetColor(255, 0, 0), false);
+    if (isMouseOver_) {
+        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+            GetColor(255, 0, 0), false);
+    }
 }
 
 void Neko::DrawEat(void)
 {
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 
-    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-        GetColor(255, 0, 0), false);
+    if (isMouseOver_) {
+        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+            GetColor(255, 0, 0), false);
+    }
 }
 
 void Neko::DrawAct(void)
 {
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 
-    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-        GetColor(255, 0, 0), false);
+    if (isMouseOver_) {
+        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+            GetColor(255, 0, 0), false);
+    }
 }
 
 void Neko::DrawGameover(void)
 {
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 
-    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-        GetColor(255, 0, 0), false);
+    if (isMouseOver_) {
+        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+            GetColor(255, 0, 0), false);
+    }
 }
 
 void Neko::DrawEnd(void)
 {
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 
-    DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-        pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-        GetColor(255, 0, 0), false);
+    if (isMouseOver_) {
+        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+            GetColor(255, 0, 0), false);
+    }
 }

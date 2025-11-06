@@ -146,10 +146,7 @@ void Wall::Draw(void)
     if (flagImg_)
     {
         DrawRotaGraph(pos_.x+10, pos_.y+10, 0.3, 0.0, img_, true);
-        DrawBox(
-            pos_.x - halfW, pos_.y - halfH,
-            pos_.x + halfW, pos_.y + halfH,
-            GetColor(0, 0, 255), false);
+        
     }
 
     // --- img2_ の描画 ---
@@ -163,16 +160,15 @@ void Wall::Draw(void)
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
 
-    
+    int color = flagImg_ ? GetColor(255, 0, 0) : GetColor(0, 255, 0);
 
-    
+    if (isMouseOver_) {
+        DrawBox(
+            pos_.x - halfW, pos_.y - halfH,
+            pos_.x + halfW, pos_.y + halfH,
+            color, false);
 
-    int color = isMouseOver_ ? GetColor(255, 0, 0) : GetColor(0, 255, 0);
-
-    DrawBox(
-        pos_.x - halfW, pos_.y - halfH,
-        pos_.x + halfW, pos_.y + halfH,
-        color, false);
+    }
 }
 
 void Wall::Release(void)

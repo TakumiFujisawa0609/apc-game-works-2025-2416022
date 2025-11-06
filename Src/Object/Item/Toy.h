@@ -30,6 +30,10 @@ public:
 
     bool IsGameOver() const { return isGameOver_; }
 
+    bool IsFalling() const { return isFalling_; }
+    bool IsLanded() const { return flagImg_ && !isFalling_; }
+
+
 private:
 
     int img_;
@@ -66,5 +70,10 @@ private:
     bool flagShadow_;      // 影を表示するかどうか
     int shadowTimer_;      // 落下までの影予告タイマー
 	float shadowAlpha_;    // 影の透明度
+
+private:
+    void UpdateShadow();
+	void DrawShadow();
+    void ResetShadow();
 
 };

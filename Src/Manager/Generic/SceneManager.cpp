@@ -78,6 +78,7 @@ void SceneManager::Update(void)
 
 void SceneManager::Draw(void)
 {
+
 	//描画先グラフィック領域の指定
 	//(3D描画でしようするカメラの設定などがリセットされる)
 	SetDrawScreen(DX_SCREEN_BACK);

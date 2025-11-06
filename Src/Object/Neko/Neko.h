@@ -45,6 +45,8 @@ public:
 
 	void SetFood(Food* food);
 
+	bool GetIsMouseOver() const;
+
 private:
 
 	// èÛë‘
@@ -63,6 +65,8 @@ private:
 	int moveTimer_;
 
 	int standbyTimer_ = 0;
+
+	bool isMouseOver_;
 
 	void Move(void);
 

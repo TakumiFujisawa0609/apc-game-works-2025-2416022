@@ -280,19 +280,34 @@ void SceneGame::DrawInfo()
 {
 	if (isGameOver_) return;
 
+	if (neko_->GetIsMouseOver())
+		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "ネコだ。");
+	/*else if (neko_->IsMoving())
+		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "ネコが動いている。");*/
+
 	if (wall_->GetFlagImg() && wall_->GetIsMouseOver())
-		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "壁に穴が開いている。異常だ。");
+		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "壁に穴が開いている…。");
 	else if (wall_->GetIsMouseOver())
 		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "ただの壁だ。");
 
 	if (food_->GetFlag() && food_->GetIsMouseOver())
-		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "餌が無くなっている。補充してあげよう。");
+		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "餌が補充されている…？");
 	else if (food_->GetIsMouseOver())
-		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "餌はまだ残っている。");
+		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "餌はない。");
 
-	if (toy_->GetFlag() && toy_->GetIsMouseOver())
-		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "おもちゃが放置されている…？");
-	else if (toy_->GetFlagShadow() && toy_->GetIsMouseOver())
-		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "…？");
+	if (toy_->GetIsMouseOver())
+	{
+		if (toy_->IsFalling() || (toy_->GetFlagShadow() && !toy_->IsLanded()))
+		{
+			// 影が出ている or 落下中（着地前）
+			DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "…？");
+		}
+		else if (toy_->IsLanded())
+		{
+			DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "おもちゃが放置されている…？");
+		}
+	}
 
+	if (message_->GetIsMouseOver())
+		DrawFormatString(0, Application::SCREEN_SIZE_Y - 40, 0xffffff, "メモ帳です。前任者のメモが確認できます。");
 }

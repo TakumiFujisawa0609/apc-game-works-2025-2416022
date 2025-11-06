@@ -1,6 +1,8 @@
 #include"Application.h"
 
 #include<DxLib.h>
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 
 #include "Manager/Generic/InputManager.h"
 #include "Manager/Generic/SceneManager.h"
@@ -59,6 +61,14 @@ void Application::Init(void)
 		return;
 	}
 
+	HWND hwnd = GetMainWindowHandle();  // DxLibのウィンドウハンドルを取得
+	LONG style = GetWindowLong(hwnd, GWL_STYLE);
+	style &= ~WS_SYSMENU;               // システムメニュー（×ボタン含む）を無効化
+	SetWindowLong(hwnd, GWL_STYLE, style);
+	SetWindowPos(hwnd, NULL, 0, 0, 0, 0,
+		SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+
+	
 
 	// キー制御初期化
 	SetUseDirectInputFlag(true);
@@ -100,7 +110,7 @@ void Application::Run(void)
 		{
 			int id;
 
-			id = MessageBox(NULL, TEXT("ゲームを終了します。よろしいですか？"), TEXT("ゲーム終了"), MB_YESNO | MB_ICONQUESTION);
+			id = MessageBox(NULL, TEXT("ゲームを終了します。よろしいですか？"), TEXT("ポーズ中…"), MB_YESNO | MB_ICONQUESTION);
 
 			if (id == IDYES)
 			{

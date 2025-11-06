@@ -1,11 +1,15 @@
 #pragma once
 #include <DxLib.h>
 
-class Wall;
-
 class Message
 {
 public:
+
+	static constexpr int MESSE_WID = 64;
+	static constexpr int MESSE_HIG = 64;
+
+	static constexpr float halfW = MESSE_WID / 2.0f;
+	static constexpr float halfH = MESSE_HIG / 2.0f;
 
 	//コンストラクタ
 	Message(void);
@@ -25,10 +29,13 @@ public:
 	//解放処理
 	void Release(void);
 
+	bool GetIsMouseOver() const;
+
 private:
 
 	VECTOR pos_;
 
-	Wall* wall_;
+	bool isMouseOver_;
+	bool flagImg_;
 };
 

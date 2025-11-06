@@ -32,10 +32,8 @@ void Toy::Init(void)
     spawnTimer_ = 180 + rand() % 300;
     count_ = 0;
 
-    // 累積時間カウンタ
-    activeTimer_ = 0;
     isGameOver_ = false;
-
+	activeTimer_ = 0;
     fallY_ = pos_.y;
     fallSpeed_ = 0.0f;
     isFalling_ = false;
@@ -50,6 +48,8 @@ void Toy::Init(void)
 
 void Toy::Update(void)
 {
+	UpdateShadow(); // 影の更新処理
+
     // --- 毎フレーム、マウスが上にあるか判定する ---
     {
         Vector2 mousePos = InputManager::GetInstance().GetMousePos();
@@ -73,8 +73,11 @@ void Toy::Update(void)
         {
             // img_ を非表示にして再表示タイマーを設定
             flagImg_ = false;
-			flagShadow_ = false;
-            activeTimer_ = 0;
+
+            ResetShadow();
+
+            isFalling_ = false;
+			activeTimer_ = 0;
 
             // 完全ランダムな再出現タイマー設定（例：3〜8秒）
             spawnTimer_ = 180 + rand() % 300; // 180〜480フレーム（約3〜8秒）
@@ -91,10 +94,7 @@ void Toy::Update(void)
     {
         spawnTimer_--;
 
-        flagShadow_ = true;
-        shadowAlpha_ +=1.0f;
-
-        // 出現タイマー終了 → Toy出現＋落下開始
+        // --- 出現タイマー終了 → Toy出現＋落下開始 ---
         if (spawnTimer_ <= 0)
         {
             flagImg_ = true;
@@ -104,27 +104,17 @@ void Toy::Update(void)
         }
     }
 
+
     // --- 落下演出 ---
     if (isFalling_)
     {
         fallSpeed_ += 1.5f; // 重力加速度
         fallY_ += fallSpeed_;
 
-        // 落下中は影を徐々に濃くする
-        if (flagShadow_)
-        {
-            shadowAlpha_ += 2.0f;  // ゆっくり濃く
-            if (shadowAlpha_ > 255.0f)
-                shadowAlpha_ = 255.0f;
-        }
-
         if (fallY_ >= pos_.y)
         {
             fallY_ = pos_.y;
             isFalling_ = false;
-
-            // 着地したら影を完全に濃くする
-            shadowAlpha_ = 255.0f;
         }
     }
 
@@ -133,25 +123,12 @@ void Toy::Update(void)
 void Toy::Draw(void)
 {
 
-    // --- 影を描画 ---
-    if (flagShadow_)
-    {
-        int alpha = (int)shadowAlpha_;
-        if (alpha > 255) alpha = 255;
-        if (alpha < 0) alpha = 0;
-
-        // 影の濃さをAlphaブレンドで描画
-        SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
-        DrawRotaGraph(pos_.x, pos_.y+10 + 10, 0.1, 0.0, shadowImg_, true);
-        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-    }
-
-
-
     float halfW = TOY_WID / 2.0f;
     float halfH = TOY_HIG / 2.0f;
 
-    // --- img_ の描画 ---
+    DrawShadow();
+
+    // img_の描画
     if (flagImg_)
     {
         DrawRotaGraph(pos_.x, fallY_, 1.0, 0.0, img_, true);
@@ -199,4 +176,77 @@ bool Toy::GetFlagShadow(void) const
 bool Toy::GetIsMouseOver() const
 {
     return isMouseOver_;
+}
+
+void Toy::UpdateShadow()
+{
+    // クリックなどでおもちゃが消えている間
+    if (!flagImg_)
+    {
+        spawnTimer_--;
+
+        // 出現3秒前から影をフェードイン
+        if (spawnTimer_ > 0)
+        {
+            if (spawnTimer_ <= 180) // 3秒以内
+            {
+                flagShadow_ = true;
+                shadowAlpha_ += 2.0f;
+                if (shadowAlpha_ > 255.0f) shadowAlpha_ = 255.0f;
+            }
+            else
+            {
+                // 待機中は影を非表示（αは保持）
+                flagShadow_ = false;
+            }
+        }
+        // 落下開始
+        else if (spawnTimer_ <= 0)
+        {
+            flagImg_ = true;
+            isFalling_ = true;
+            fallY_ = -100;
+            fallSpeed_ = 0.0f;
+
+            flagShadow_ = true;
+            if (shadowAlpha_ < 50.0f) shadowAlpha_ = 50.0f;
+        }
+    }
+
+    // 落下中は影を地面に固定・濃くしていく
+    if (isFalling_)
+    {
+        shadowAlpha_ += 3.0f;
+        if (shadowAlpha_ > 180.0f) shadowAlpha_ = 180.0f;
+    }
+
+    // 落下完了後
+    if (!isFalling_ && flagImg_)
+    {
+        shadowAlpha_ = 180.0f;
+        flagShadow_ = true;
+    }
+}
+
+void Toy::DrawShadow()
+{
+    // --- 影を描画 ---
+    if (flagShadow_)
+    {
+        int alpha = (int)shadowAlpha_;
+        if (alpha > 255) alpha = 255;
+        if (alpha < 0) alpha = 0;
+
+        // 影の濃さをAlphaブレンドで描画
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+        DrawRotaGraph(pos_.x, pos_.y + 10 + 10, 0.1, 0.0, shadowImg_, true);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    }
+
+}
+
+void Toy::ResetShadow()
+{
+    flagShadow_ = false;
+    shadowAlpha_ = 0.0f;
 }

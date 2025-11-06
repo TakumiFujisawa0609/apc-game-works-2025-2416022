@@ -121,10 +121,10 @@ void Food::Draw(void)
     if (flagImg_)
     {
         DrawRotaGraph(pos_.x , pos_.y, 0.05, 0.0, img_, true);
-        DrawBox(
+        /*DrawBox(
             pos_.x - halfW, pos_.y - halfH,
             pos_.x + halfW, pos_.y + halfH,
-            GetColor(0, 0, 255), false);
+            GetColor(0, 0, 255), false);*/
     }
 
     int color = isMouseOver_ ? GetColor(255, 0, 0) : GetColor(0, 255, 0);

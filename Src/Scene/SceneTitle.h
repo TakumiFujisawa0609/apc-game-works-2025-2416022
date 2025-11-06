@@ -49,4 +49,14 @@ private:
 
 	//描画(デバック)
 	void DrawDebug(void);
+
+	int waitTimer_;      // 一定時間経過チェック用
+	int movieHandle_;    // ムービーハンドル
+	bool isPlayingMovie_; // ムービー再生中かどうか
+
+	enum class STATE {
+		TITLE,   // 通常タイトル表示
+		MOVIE,   // ムービー再生中
+	};
+	STATE state_;
 };
