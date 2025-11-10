@@ -24,6 +24,8 @@ public:
 
     bool IsGameOver() const { return isGameOver_; }
 
+	void SetInfoText(const std::string& text);
+
 private:
 
 	int img_;
@@ -41,5 +43,16 @@ private:
 	bool isGameOver_;
 	int flagSpawn_;
 	bool isMouseOver_;
+
+	bool isShowingInfo_;    // ← 表示中フラグ
+	int infoImg_;           // ← 背景画像（黒背景など）
+	std::string infoText_;
+
+
+	// 閉じるボタン情報
+	Vector2 closePos_;
+	int closeW_, closeH_;
+
+
 };
 

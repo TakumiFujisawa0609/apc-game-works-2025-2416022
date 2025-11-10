@@ -6,8 +6,8 @@ class TV
 {
 public:
 
-    static constexpr int TV_WID = 86;
-    static constexpr int TV_HIG = 86;
+    static constexpr int TV_WID = 132;
+    static constexpr int TV_HIG = 132;
 
 	TV(void);
 	~TV(void);
@@ -19,16 +19,27 @@ public:
 
 	VECTOR GetPos(void) const;
 	bool GetFlag(void) const;
-	void SetFlag(bool flag) { flag_ = flag; }
+	//void SetFlag(bool flag) { flag_ = flag; }
 
 	bool GetIsMouseOver() const;
 
-	bool IsGameOver() const { return isGameOver_; }
+    bool IsGameOver() const;
+
+    void SetNekoPos(const VECTOR& nekoPos);
+
+	void GetFlagLevel(int& level) const { level = flagLevel_; }
 
 private:
 
     int img_;
     int img2_;
+
+	int imgA_;
+	int imgB_;
+	int imgC_;
+	int imgD_;
+	int imgE_;
+
 
     VECTOR pos_;
     bool flagImg_;
@@ -37,11 +48,10 @@ private:
 
     int count_;
 
+    // 再出現用タイマー
     int spawnTimer_;      // 次の出現までのカウント
     int spawnInterval_;   // 出現間隔の上限時間（乱数用）
-
     int spawnTimerBase_ = 180;       // img_ 初期再表示時間（フレーム）
-    float spawnTimerMultiplier_ = 1.0f; // img_ 再表示時間短縮係数
 
     int activeTimer_;        // 出現中の累積時間（リセットされない）
     const int activeLimit_ = 600; // 合計10秒（60fps換算）
@@ -51,5 +61,8 @@ private:
 
     bool isMouseOver_;
 
+    int flagLevel_ = 0;
+    int progressTimer_ = 0;
+    VECTOR nekoPos_;
 };
 

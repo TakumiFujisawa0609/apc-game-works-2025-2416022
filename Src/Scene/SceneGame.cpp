@@ -8,6 +8,7 @@
 #include "../Object/Item/Wall.h"
 #include "../Object/Item/Toy.h"
 #include "../Object/Item/PC.h"
+#include "../Object/Item/TV.h"
 
 #include "../Object/Message.h"
 #include "../Common/Easing.h"
@@ -22,6 +23,7 @@ SceneGame::SceneGame(void)
 	wall_ = nullptr;
 	toy_ = nullptr;
 	pc_ = nullptr;
+	tv_ = nullptr;
 
 	message_ = nullptr;
 	isEnd_ = false;
@@ -46,6 +48,9 @@ void SceneGame::Init(void)
 
 	pc_ = new PC();
 	pc_->Init();
+
+	tv_ = new TV();
+	tv_->Init();
 
 	message_ = new Message();
 	message_->Init();
@@ -85,6 +90,9 @@ void SceneGame::Update(void)
 		case GameOverSource::PC:
 			pc_->Update();
 			break;
+		case GameOverSource::TV:
+			tv_->Update();
+			break;
 		default:
 			break;
 		}
@@ -114,6 +122,9 @@ void SceneGame::Update(void)
 	wall_->Update();
 	toy_->Update();
 	pc_->Update();
+	tv_->Update();
+
+	tv_->SetNekoPos(neko_->GetPos());
 
 	message_->Update();
 
@@ -145,6 +156,13 @@ void SceneGame::Update(void)
 		return;
 	}
 
+	// --- TV ゲームオーバー判定 ---
+	if (tv_->IsGameOver())
+	{
+		StartGameOver(GameOverSource::TV);
+		return;
+	}
+
 	// --- ゲームクリアタイマー ---
 	count_++;
 	if (count_ >= 3200)
@@ -165,6 +183,7 @@ void SceneGame::Draw(void)
 	wall_->Draw();
 	toy_->Draw();
 	pc_->Draw();
+	tv_->Draw();
 
 	message_->Draw();
 
@@ -217,6 +236,17 @@ void SceneGame::Draw(void)
 				Application::SCREEN_SIZE_Y / 2,
 				1.0, 0.0, img5_, true);
 			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "仕事を放置してはいけません。ネコの管理もあなたの仕事です。", GetColor(255, 0, 0), fontHandle);
+		}
+		else if (gameOverSource_ == GameOverSource::TV)
+		{
+			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0, 0.0, img4_, true);
+			// --- ゲームオーバー画像 ---
+			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0, 0.0, img5_, true);
+			//DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "テレビの放置は良くありません。ネコの管理もあなたの仕事です。", GetColor(255, 0, 0), fontHandle);
 		}
 	}
 
@@ -274,6 +304,13 @@ void SceneGame::Release(void)
 		pc_ = nullptr;
 	}
 
+	if (tv_)
+	{
+		tv_->Release();
+		delete tv_;
+		tv_ = nullptr;
+	}
+
 	if (message_)
 	{
 		message_->Release();
@@ -317,6 +354,11 @@ void SceneGame::StartGameOver(GameOverSource source)
 			// PlaySoundMem(pcAlertSE, DX_PLAYTYPE_BACK);
 			break;
 
+		case GameOverSource::TV:
+			// テレビ放置 → 「ネコが退屈している」画像を出すとか
+			// PlaySoundMem(tvAlertSE, DX_PLAYTYPE_BACK);
+			break;
+
 		default:
 			break;
 		}
@@ -351,7 +393,7 @@ void SceneGame::DrawInfo()
 	else if (food_->GetIsMouseOver())
 	{
 		if (food_->GetFlag())
-			infoText = "餌が補充されている…？";
+			infoText = "餌は補充されている。";
 		else
 			infoText = "餌はない。";
 	}
@@ -361,6 +403,10 @@ void SceneGame::DrawInfo()
 			infoText = "壁に穴が開いている…。";
 		else
 			infoText = "ただの壁だ。";
+	}
+	else if (tv_->GetIsMouseOver())
+	{
+			infoText = "アナログテレビだ。こちらから電源を点けることはできない。";
 	}
 	else if (neko_->GetIsMouseOver())
 	{

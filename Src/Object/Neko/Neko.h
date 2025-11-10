@@ -1,9 +1,15 @@
 #pragma once
 
 #include "../../Object/Item/Food.h"
+#include "../../Object/Item/Wall.h"
+#include "../../Object/Item/PC.h"
+#include "../../Object/Item/TV.h"
+
 #include <DxLib.h>
 
 class Food;
+class PC;
+class TV;
 class Wall;
 
 class Neko
@@ -20,9 +26,20 @@ public:
 		STANDBY,
 		MOVE,
 		EAT,
+		PC,
+		TV,
 		ACT,
 		GAMEOVER,
 		END,
+	};
+
+	// 追従ターゲット
+	enum class TARGET
+	{
+		NONE,
+		FOOD,
+		PC,
+		TV
 	};
 
 	//コンストラクタ
@@ -45,12 +62,20 @@ public:
 
 	void SetFood(Food* food);
 
+	void SetPC(PC* pc);
+
+	void SetTV(TV* tv);
+
 	bool GetIsMouseOver() const;
+
+	VECTOR GetPos() const { return pos_; }	
 
 private:
 
 	// 状態
 	STATE state_;
+
+	TARGET targetType_;
 
 	int img_;
 
@@ -69,12 +94,15 @@ private:
 	bool isMouseOver_;
 
 	void Move(void);
+	void MoveToTarget(VECTOR targetPos, bool targetFlag);
 
 	// 状態遷移
 	void ChangeState(STATE state);
 	virtual void ChangeStandby(void);
 	virtual void ChangeMove(void);
 	virtual void ChangeEat(void);
+	virtual void ChangePC(void);
+	virtual void ChangeTV(void);
 	virtual void ChangeAct(void);
 	virtual void ChangeGameover(void);
 	virtual void ChangeEnd(void);
@@ -83,6 +111,8 @@ private:
 	virtual void UpdateStandby(void);
 	virtual void UpdateMove(void);
 	virtual void UpdateEat(void);
+	virtual void UpdatePC(void);
+	virtual void UpdateTV(void);
 	virtual void UpdateAct(void);
 	virtual void UpdateGameover(void);
 	virtual void UpdateEnd(void);
@@ -91,11 +121,17 @@ private:
 	virtual void DrawStandby(void);
 	virtual void DrawMove(void);
 	virtual void DrawEat(void);
+	virtual void DrawPC(void);
+	virtual void DrawTV(void);
 	virtual void DrawAct(void);
 	virtual void DrawGameover(void);
 	virtual void DrawEnd(void);
 
 	Food* food_;
+
+	PC* pc_;
+
+	TV* tv_;
 
 	Wall* wall_;
 };

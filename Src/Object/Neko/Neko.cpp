@@ -3,6 +3,8 @@
 #include "../../Application.h"
 #include "../../Manager/Generic/InputManager.h"
 #include "Neko.h"
+#include <DxLib.h>
+
 
 Neko::Neko(void)
 {
@@ -22,6 +24,7 @@ void Neko::Init(void)
 	moveTimer_ = 0;
 	isMoving_ = false;
 	isMouseOver_ = false;
+	targetType_ = TARGET::NONE;
 
     ChangeState(STATE::MOVE);
 }
@@ -53,6 +56,12 @@ void Neko::Update(void)
     case Neko::STATE::EAT:
         UpdateEat();
         break;
+	case Neko::STATE::PC:
+		UpdatePC();
+		break;
+	case Neko::STATE::TV:
+		UpdateTV();
+		break;
     case Neko::STATE::ACT:
         UpdateAct();
         break;
@@ -82,6 +91,12 @@ void Neko::Draw(void)
     case Neko::STATE::EAT:
         DrawEat();
         break;
+	case Neko::STATE::PC:
+		DrawPC();
+		break;
+	case Neko::STATE::TV:
+		DrawTV();
+        break;
     case Neko::STATE::ACT:
         DrawAct();
         break;
@@ -106,6 +121,16 @@ void Neko::Release(void)
 void Neko::SetFood(Food* food)
 {
     food_ = food;
+}
+
+void Neko::SetPC(PC* pc)
+{
+    pc_ = pc;
+}
+
+void Neko::SetTV(TV* tv)
+{
+	tv_ = tv;
 }
 
 bool Neko::GetIsMouseOver() const
@@ -175,6 +200,32 @@ void Neko::Move(void)
     }*/
 }
 
+void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
+{
+    float dx = targetPos.x - pos_.x;
+    float dy = targetPos.y - pos_.y;
+    float len = sqrtf(dx * dx + dy * dy);
+
+    if (len > 5.0f)
+    {
+        float speed = 2.0f;
+        pos_.x += dx / len * speed;
+        pos_.y += dy / len * speed;
+    }
+    else
+    {
+        // 到達
+        pos_.x = targetPos.x;
+        pos_.y = targetPos.y;
+        moveDirX_ = moveDirY_ = 0;
+        isMoving_ = false;
+
+        targetFlag = false;
+        targetType_ = TARGET::NONE;
+        ChangeState(STATE::STANDBY);
+    }
+}
+
 void Neko::ChangeState(STATE state)
 {
     state_ = state;
@@ -192,6 +243,12 @@ void Neko::ChangeState(STATE state)
     case Neko::STATE::EAT:
         ChangeEat();
         break;
+	case Neko::STATE::PC:
+		ChangePC();
+		break;
+	case Neko::STATE::TV:
+		ChangeTV();
+		break;
     case Neko::STATE::ACT:
         ChangeAct();
         break;
@@ -220,6 +277,14 @@ void Neko::ChangeEat(void)
 {
 }
 
+void Neko::ChangePC(void)
+{
+}
+
+void Neko::ChangeTV(void)
+{
+}
+
 void Neko::ChangeAct(void)
 {
 }
@@ -243,12 +308,26 @@ void Neko::UpdateStandby(void)
 
 void Neko::UpdateMove(void)
 {
-    // --- Foodが有効なら、EAT状態に移行 ---
-    if (food_ && food_->GetFlag())
+    // --- 優先順位: Food > PC > TV ---
+    /*if (food_ && food_->GetFlag())
     {
+        targetType_ = TARGET::FOOD;
         ChangeState(STATE::EAT);
         return;
     }
+    
+    else*/ if (tv_ && tv_->GetFlag())
+    {
+        targetType_ = TARGET::TV;
+        ChangeState(STATE::TV);
+        return;
+	}
+	else if (pc_ && pc_->GetFlag())
+	{
+		targetType_ = TARGET::PC;
+		ChangeState(STATE::PC);
+		return;
+	}
 
     Move();
 }
@@ -261,31 +340,30 @@ void Neko::UpdateEat(void)
         return;
     }
 
-    const VECTOR& foodPos = food_->GetPos();
-    float dx = foodPos.x - pos_.x;
-    float dy = foodPos.y - pos_.y;
-    float len = sqrtf(dx * dx + dy * dy);
-
-    if (len > 5.0f) // ← 少し余裕を持たせる
-    {
-        float speed = 2.0f;
-        pos_.x += dx / len * speed;
-        pos_.y += dy / len * speed;
-    }
-    else
-    {
-        // --- 食べ物に到達 ---
-        pos_.x = foodPos.x;
-        pos_.y = foodPos.y;
-        moveDirX_ = 0.0f;
-        moveDirY_ = 0.0f;
-        isMoving_ = false;
-
-        food_->SetFlag(false);
-        ChangeState(STATE::STANDBY);
-    }
+    MoveToTarget(food_->GetPos(), food_->GetFlag());
 }
 
+void Neko::UpdatePC(void)
+{
+    if (!pc_ || !pc_->GetFlag())
+    {
+        ChangeState(STATE::MOVE);
+        return;
+    }
+
+    MoveToTarget(pc_->GetPos(), pc_->GetFlag());
+}
+
+void Neko::UpdateTV(void)
+{
+    if (!tv_ || !tv_->GetFlag())
+    {
+        ChangeState(STATE::MOVE);
+        return;
+    }
+
+    MoveToTarget(tv_->GetPos(), tv_->GetFlag());
+}
 
 void Neko::UpdateAct(void)
 {
@@ -322,6 +400,28 @@ void Neko::DrawMove(void)
 }
 
 void Neko::DrawEat(void)
+{
+    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
+
+    if (isMouseOver_) {
+        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+            GetColor(255, 0, 0), false);
+    }
+}
+
+void Neko::DrawPC(void)
+{
+    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
+
+    if (isMouseOver_) {
+        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
+            GetColor(255, 0, 0), false);
+    }
+}
+
+void Neko::DrawTV(void)
 {
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 

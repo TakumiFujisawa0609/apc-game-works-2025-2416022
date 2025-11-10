@@ -63,5 +63,17 @@ private:
 	VECTOR cancelPos_;
 	float cancelW_;
 	float cancelH_;
+
+	// 次へボタン領域
+	VECTOR nextPos_;
+	float nextW_;
+	float nextH_;
+
+	// 戻るボタン領域
+	VECTOR backPos_;
+	float backW_;
+	float backH_;
+
+
 };
 

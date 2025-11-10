@@ -40,40 +40,19 @@ void Food::Init(void)
 void Food::Update()
 {
     // --- 毎フレーム、マウスが上にあるか判定する ---
+    Vector2 mousePos = InputManager::GetInstance().GetMousePos();
+    float halfW = FOOD_WID / 2.0f;
+    float halfH = FOOD_HIG / 2.0f;
+
+    isMouseOver_ =
+        (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
+            mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
+
+    // --- クリックで flagImg_ を反転 ---
+    if (isMouseOver_ && InputManager::GetInstance().IsTrgMouseLeft())
     {
-        Vector2 mousePos = InputManager::GetInstance().GetMousePos();
-        float halfW = FOOD_WID / 2.0f;
-        float halfH = FOOD_HIG / 2.0f;
-
-        isMouseOver_ =
-            (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
-                mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
-    }
-
-    // --- img_ クリック処理 ---
-    if (flagImg_ && InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_)
-    {
-        Vector2 mousePos = InputManager::GetInstance().GetMousePos();
-        float halfW = FOOD_WID / 2.0f;
-        float halfH = FOOD_HIG / 2.0f;
-
-        if (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
-            mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH)
-        {
-            // img_ を非表示にして再表示タイマーを設定
-            flagImg_ = false;
-
-            activeTimer_ = 0;
-
-            // 完全ランダムな再出現タイマー設定（例：3〜8秒）
-            spawnTimer_ = 1200 + rand() % 300; // 180〜480フレーム（約3〜8秒）
-
-            // 再表示間隔を固定（短縮しない）
-            spawnTimerMultiplier_ = 1.0f;
-
-            count_ = 0;
-            return;
-        }
+        flagImg_ = !flagImg_;  // true ⇄ false を切り替え
+        activeTimer_ = 0;      // 必要なら累積タイマーをリセット
     }
 
     // 表示中なら累積タイマー加算
@@ -81,32 +60,14 @@ void Food::Update()
     {
         activeTimer_++;
 
-        // 合計時間が制限を超えたらゲームオーバー
+        // 制限時間を超えたらゲームオーバー
         if (activeTimer_ > activeLimit_)
         {
             isGameOver_ = true;
         }
     }
-    else
-    {
-        // 表示していない時は出現タイマーを減らす
-        if (--spawnTimer_ <= 0)
-        {
-            flagImg_ = true;
-        }
-    }
-
-    // --- spawnTimer_ により img_ 再表示 ---
-    if (!flagImg_)
-    {
-        spawnTimer_--;
-        if (spawnTimer_ <= 0)
-        {
-            flagImg_ = true;
-            count_ = 0;
-        }
-    }
 }
+
 
 
 void Food::Draw(void)
