@@ -13,6 +13,7 @@ class Neko;
 class Food;
 class Wall;
 class Toy;
+class PC;
 
 class Message;
 
@@ -26,6 +27,7 @@ public:
 		FOOD,
 		WALL,
 		TOY,
+		PC,
 	} gameOverSource_ = GameOverSource::NONE; // ★どこでゲームオーバーになったかを記録
 
 	//コンストラクタ
@@ -64,6 +66,8 @@ private:
 	Wall* wall_;
 
 	Toy* toy_;
+
+	PC* pc_;
 
 	Message* message_;
 

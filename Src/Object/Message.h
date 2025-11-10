@@ -1,5 +1,9 @@
 #pragma once
 #include <DxLib.h>
+#include <string>
+#include <vector>
+#include "../Common/Vector2.h"
+
 
 class Message
 {
@@ -30,6 +34,7 @@ public:
 	void Release(void);
 
 	bool GetIsMouseOver() const;
+	bool GetIsShowingImage() const; // ← 画像表示中フラグ
 
 private:
 
@@ -37,5 +42,26 @@ private:
 
 	bool isMouseOver_;
 	bool flagImg_;
+
+	int img_;
+
+	int img2_;
+	int img3_;
+	int img4_;
+	int img5_;
+	int img6_;
+
+	int imgA_;
+	int imgB_;
+
+
+	std::vector<int> images_;   // 複数画像
+	int currentImageIndex_;     // 現在の画像インデックス
+	bool isShowingImage_;       // 画像表示中フラグ
+
+	// キャンセルボタン領域
+	VECTOR cancelPos_;
+	float cancelW_;
+	float cancelH_;
 };
 
