@@ -58,13 +58,14 @@ void SceneGame::Init(void)
 	count_ = 0;
 	isEnd_ = false;
 
-	/*neko_->SetFood(food_);*/
+	neko_->SetFood(food_);
 	neko_->SetPC(pc_);
 	neko_->SetTV(tv_);
 
 	img3_ = LoadGraph((Application::PATH_ITEM + "nc296608.png").c_str());
 	img4_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str());
 	img5_ = LoadGraph((Application::PATH_STAGE + "白円.png").c_str());
+	img6_ = LoadGraph((Application::PATH_ITEM + "NyanCat.png").c_str());
 
 
 	fontHandle=CreateFontToHandle(NULL, 18, 9,-1);
@@ -249,8 +250,8 @@ void SceneGame::Draw(void)
 			// --- ゲームオーバー画像 ---
 			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
 				Application::SCREEN_SIZE_Y / 2,
-				1.0, 0.0, img5_, true);
-			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "仕事を放置してはいけません。ネコの管理もあなたの仕事です。", GetColor(255, 0, 0), fontHandle);
+				2.0, 0.0, img6_, true);
+			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "YOUR COMPUTER HAS BEEN FUCKED BY THE MEMZ TROJAN.Your computer won't boot up again, so use it as long as you can!:D", GetColor(255, 0, 0), fontHandle);
 		}
 		else if (gameOverSource_ == GameOverSource::TV)
 		{

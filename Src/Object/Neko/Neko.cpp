@@ -152,12 +152,33 @@ void Neko::SetTV(TV* tv)
 
 void Neko::SelectTarget()
 {
-    // 各ターゲットが有効かどうかチェック
     bool foodValid = (food_ && food_->GetFlag());
     bool pcValid = (pc_ && pc_->GetFlag());
     bool tvValid = (tv_ && tv_->GetFlag());
 
-    // 優先度の高い順にチェック（Food > PC > TV）
+    // すでにターゲットがある場合の上書きルール
+    if (targetType_ != TARGET::NONE)
+    {
+        // Food が出現した場合は最優先で上書き
+        if (foodValid && targetType_ != TARGET::FOOD)
+        {
+            targetType_ = TARGET::FOOD;
+            ChangeState(STATE::EAT);
+        }
+        // 現在ターゲットが無効になったら再選択
+        else if (
+            (targetType_ == TARGET::FOOD && !foodValid) ||
+            (targetType_ == TARGET::PC && !pcValid) ||
+            (targetType_ == TARGET::TV && !tvValid))
+        {
+            targetType_ = TARGET::NONE;
+            SelectTarget(); // 再帰的に再選択
+        }
+
+        return;
+    }
+
+    // --- 新規ターゲット選択 ---
     if (foodValid)
     {
         targetType_ = TARGET::FOOD;
@@ -180,6 +201,7 @@ void Neko::SelectTarget()
             ChangeState(STATE::MOVE);
     }
 }
+
 
 
 
@@ -278,21 +300,21 @@ void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
         {
         case TARGET::TV:
             if (tv_) {
-                tv_->SetFlag(false);
+                //tv_->SetFlag(false);
                 //tv_->ChangeImage(); // TVの画像を変更
             }
             break;
 
         case TARGET::FOOD:
             if (food_) {
-                food_->SetFlag(false);
+                //food_->SetFlag(false);
                 //food_->ChangeImage(); // Foodの画像を変更
             }
             break;
 
         case TARGET::PC:
             if (pc_) {
-                pc_->SetFlag(false);
+                //pc_->SetFlag(false);
                 //pc_->ChangeImage(); // PCの画像を変更
             }
             break;

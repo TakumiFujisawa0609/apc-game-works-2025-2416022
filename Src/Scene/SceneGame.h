@@ -80,6 +80,7 @@ private:
 	int img3_;
 	int img4_;
 	int img5_;
+	int img6_;
 
 	int count_;
 	bool isEnd_;

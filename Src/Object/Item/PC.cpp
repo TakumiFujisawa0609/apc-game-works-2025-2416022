@@ -29,6 +29,8 @@ void PC::Init()
     cancelW_ = cancelH_ = 0;
 
     spawnTimer_ = rand() % spawnInterval_;
+
+	flagLevel_ = 0;
 }
 
 void PC::Update()
@@ -73,9 +75,10 @@ void PC::Update()
     // --- PCがアクティブならネコが接近 ---
     if (flag_) {
         // 距離計算
-        float dx = nekoPos_.x - pos_.x;
-        float dy = nekoPos_.y - pos_.y;
+        float dx = nekoPos_.x - (pos_.x);
+        float dy = nekoPos_.y - (pos_.y + 200.0f); // GetTargetPosと同じ補正
         float dist = sqrtf(dx * dx + dy * dy);
+
 
         if (dist < 150.0f) { // 接近判定範囲
             progressTimer_++;
@@ -106,6 +109,13 @@ void PC::Draw(void)
     // 通常のPCアイコン描画
     DrawRotaGraph(pos_.x, pos_.y, 0.05, 0.0, img_, true);
 	DrawRotaGraph(pos_.x-100, pos_.y+150, 0.1, 0.0, img2_, true);
+
+    if (isMouseOver_) {
+        DrawBox(
+            pos_.x - PC_WID / 2.0f, pos_.y - PC_HIG / 2.0f,
+            pos_.x + PC_WID / 2.0f, pos_.y + PC_HIG / 2.0f,
+            GetColor(255, 0, 0), false);
+    }
 }
 
 // 実績ウィンドウ専用描画
@@ -118,7 +128,7 @@ void PC::DrawAchievementWindow(void)
 
     // テキスト or 画像切り替え
     if (flag_) {
-        DrawRotaGraph(Application::SCREEN_SIZE_X / 2 - 128, Application::SCREEN_SIZE_Y / 2 - 128, 1.0,0.0,img3_, true);
+        DrawRotaGraph(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2, 1.5,0.0,img3_, true);
     }
     else {
         int textW = GetDrawStringWidth(infoText_.c_str(), (int)infoText_.size());
