@@ -19,7 +19,7 @@ public:
 
 	VECTOR GetPos(void) const;
 	bool GetFlag(void) const;
-	//void SetFlag(bool flag) { flag_ = flag; }
+	void SetFlag(bool flag) { flag_ = flag; }
 
 	bool GetIsMouseOver() const;
 
@@ -29,7 +29,11 @@ public:
 
 	void GetFlagLevel(int& level) const { level = flagLevel_; }
 
+    void ChangeImage();
+
 private:
+
+	
 
     int img_;
     int img2_;

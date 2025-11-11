@@ -66,6 +66,8 @@ public:
 
 	void SetTV(TV* tv);
 
+	void SelectTarget();
+
 	bool GetIsMouseOver() const;
 
 	VECTOR GetPos() const { return pos_; }	
@@ -74,8 +76,7 @@ private:
 
 	// èÛë‘
 	STATE state_;
-
-	TARGET targetType_;
+	TARGET targetType_ = TARGET::NONE;
 
 	int img_;
 
@@ -92,6 +93,9 @@ private:
 	int standbyTimer_ = 0;
 
 	bool isMouseOver_;
+
+	bool isVisible_; // ï\é¶ÉtÉâÉO
+	bool justHidden_;
 
 	void Move(void);
 	void MoveToTarget(VECTOR targetPos, bool targetFlag);
@@ -127,12 +131,12 @@ private:
 	virtual void DrawGameover(void);
 	virtual void DrawEnd(void);
 
-	Food* food_;
+	Food* food_ = nullptr;
 
-	PC* pc_;
+	PC* pc_ = nullptr;
 
-	TV* tv_;
+	TV* tv_ = nullptr;
 
-	Wall* wall_;
+	Wall* wall_ = nullptr;
 };
 

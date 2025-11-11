@@ -27,7 +27,11 @@ public:
 
 	bool IsGameOver() const { return isGameOver_; }
 
+    void ChangeImage();
+
 private:
+
+	
 
     int img_;
     int img2_;

@@ -151,6 +151,12 @@ void TV::SetNekoPos(const VECTOR& nekoPos)
     nekoPos_ = nekoPos;
 }
 
+void TV::ChangeImage()
+{
+    // V‚µ‚¢‰æ‘œ‚ÉØ‚è‘Ö‚¦
+    img_ = LoadGraph((Application::PATH_ITEM + "tv_on.png").c_str());
+}
+
 bool TV::IsGameOver() const
 {
     return (flagLevel_ >= 5);

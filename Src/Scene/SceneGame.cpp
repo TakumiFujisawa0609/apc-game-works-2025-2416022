@@ -58,7 +58,9 @@ void SceneGame::Init(void)
 	count_ = 0;
 	isEnd_ = false;
 
-	neko_->SetFood(food_);
+	/*neko_->SetFood(food_);*/
+	neko_->SetPC(pc_);
+	neko_->SetTV(tv_);
 
 	img3_ = LoadGraph((Application::PATH_ITEM + "nc296608.png").c_str());
 	img4_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str());
@@ -115,6 +117,12 @@ void SceneGame::Update(void)
 		return;
 	}
 
+	if (pc_->GetFlagImg())
+	{
+		pc_->Update();
+		return; 
+	}
+
 	// --- 通常時の更新 ---
 	stage_->Update();
 	neko_->Update();
@@ -125,6 +133,7 @@ void SceneGame::Update(void)
 	tv_->Update();
 
 	tv_->SetNekoPos(neko_->GetPos());
+	pc_->SetNekoPos(neko_->GetPos());
 
 	message_->Update();
 
@@ -188,6 +197,12 @@ void SceneGame::Draw(void)
 	message_->Draw();
 
 	DrawInfo();
+
+	// --- 実績ウィンドウが開いている場合は最前面に描画 ---
+	if (pc_->GetFlagImg()) {
+		pc_->DrawAchievementWindow();
+	}
+
 
 	if (isGameOver_)
 	{
