@@ -58,8 +58,8 @@ void SceneGame::Init(void)
 	count_ = 0;
 	isEnd_ = false;
 
-	neko_->SetFood(food_);
-	neko_->SetPC(pc_);
+	/*neko_->SetFood(food_);
+	neko_->SetPC(pc_);*/
 	neko_->SetTV(tv_);
 
 	img3_ = LoadGraph((Application::PATH_ITEM + "nc296608.png").c_str());
@@ -422,8 +422,38 @@ void SceneGame::DrawInfo()
 	}
 	else if (tv_->GetIsMouseOver())
 	{
-			infoText = "アナログテレビだ。こちらから電源を点けることはできない。";
+		if (!tv_->GetFlag())
+		{
+			infoText = "空のカラーテレビだ。壊れているため、電源を点けることはできない。";
+		}
+		else
+		{
+			int level = 0;
+			tv_->GetFlagLevel(level);
+
+			switch (level)
+			{
+			case 0:
+				infoText = "テレビが点いている…？";
+				break;
+			case 1:
+				infoText = "ノイズが走っている…。";
+				break;
+			case 2:
+				infoText = "ニュース画面だ。天気予報のようだが、ここでは必要ない。";
+				break;
+			case 3:
+				infoText = "警報";
+				break;
+			case 4:
+				infoText = "緑のノイズが全画面を覆っている…。";
+				break;
+			default: // level >= 5
+				break;
+			}
+		}
 	}
+
 	else if (neko_->GetIsMouseOver())
 	{
 		infoText = "ネコだ。";

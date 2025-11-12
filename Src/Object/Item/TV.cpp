@@ -29,6 +29,8 @@ void TV::Init(void)
 	flag_ = false;
 	isMouseOver_ = false;
 
+	isGameOver_ = false;
+
     spawnTimer_ = 0;
     flagSpawn_ = false;
     flagLevel_ = 0;
@@ -56,6 +58,7 @@ void TV::Update(void)
         {
             flag_ = true;
             spawnTimer_ = 0;
+            spawnInterval_ = spawnTimerBase_ + rand() % 180; // 3秒幅ランダム
         }
         return; // 表示されていないときはこれ以上進まない
     }
@@ -89,6 +92,8 @@ void TV::Update(void)
             progressTimer_ = 0;
         }
     }
+	// --- ゲームオーバー判定 ---
+	isGameOver_ = (flagLevel_ >= 5);
 }
 
 void TV::Draw(void)
@@ -159,5 +164,5 @@ void TV::ChangeImage()
 
 bool TV::IsGameOver() const
 {
-    return (flagLevel_ >= 5);
+    return isGameOver_;
 }
