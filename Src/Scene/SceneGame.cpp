@@ -58,8 +58,8 @@ void SceneGame::Init(void)
 	count_ = 0;
 	isEnd_ = false;
 
-	/*neko_->SetFood(food_);
-	neko_->SetPC(pc_);*/
+	neko_->SetFood(food_);
+	neko_->SetPC(pc_);
 	neko_->SetTV(tv_);
 
 	img3_ = LoadGraph((Application::PATH_ITEM + "nc296608.png").c_str());
@@ -129,7 +129,7 @@ void SceneGame::Update(void)
 	neko_->Update();
 	food_->Update();
 	wall_->Update();
-	toy_->Update();
+	toy_->Update(food_);
 	pc_->Update();
 	tv_->Update();
 
@@ -392,7 +392,10 @@ void SceneGame::DrawInfo()
 
 	if (pc_->GetIsMouseOver())
 	{
-		infoText = "パソコンです。実績が確認できます。";
+		if (pc_->GetFlag())
+			infoText = "コンピュータウイルスに感染している…！";
+		else
+			infoText = "パソコンです。実績が確認できます。";
 	}
 
 	else if (message_->GetIsMouseOver())

@@ -1,5 +1,5 @@
-﻿
-#include "Toy.h"
+﻿#include "Toy.h"
+#include "Food.h"  // Foodクラスのヘッダーをインクルード
 #include "../../Application.h"
 #include "../../Manager/Generic/InputManager.h"
 #include "../../Manager/Generic/SceneManager.h"
@@ -18,37 +18,46 @@ void Toy::Init(void)
 {
     // 画像読み込み
     img_ = LoadGraph((Application::PATH_ITEM + "nc279907.png").c_str());
+    shadowImg_ = LoadGraph((Application::PATH_ITEM + "nc305932.png").c_str());
 
     pos_.x = 900;
     pos_.y = 650;
 
     flagImg_ = false;
     isMouseOver_ = false;
-	flag_ = false;
+    flag_ = false;
 
-    spawnTimerBase_ = 300;        // 基本再表示時間
-    spawnTimerMultiplier_ = 1.0f; // 初期倍率
+    spawnTimerBase_ = 300;
+    spawnTimerMultiplier_ = 1.0f;
     spawnInterval_ = 300;
     spawnTimer_ = 180 + rand() % 300;
     count_ = 0;
 
-    isGameOver_ = false;
-	activeTimer_ = 0;
     fallY_ = pos_.y;
     fallSpeed_ = 0.0f;
     isFalling_ = false;
 
-    shadowImg_ = LoadGraph((Application::PATH_ITEM + "nc305932.png").c_str());
     flagShadow_ = false;
     shadowTimer_ = 0;
-	shadowAlpha_ = 0.0f;
+    shadowAlpha_ = 0.0f;
 
-
+    // Food連携用の初期化
+    state_ = State::WAITING;
+    targetPos_ = VGet(0, 0, 0);
+    moveSpeed_ = 5.0f;  // 移動速度
+    eatingTimer_ = 0;
+    shakeOffset_ = 0.0f;
+    shakeCount_ = 0;
 }
 
-void Toy::Update(void)
+void Toy::Update(Food* food)
 {
-	UpdateShadow(); // 影の更新処理
+    // ゲームオーバー状態の場合は処理を終了
+    if (state_ == State::GAME_OVER)
+    {
+        UpdateGameOver();
+        return;
+    }
 
     // --- 毎フレーム、マウスが上にあるか判定する ---
     {
@@ -61,101 +70,221 @@ void Toy::Update(void)
                 mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
     }
 
-    // --- img_ クリック処理 ---
-    if (flagImg_ && InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_)
+    // --- 状態別の処理 ---
+    switch (state_)
     {
-        Vector2 mousePos = InputManager::GetInstance().GetMousePos();
-        float halfW = TOY_WID / 2.0f;
-        float halfH = TOY_HIG / 2.0f;
-
-        if (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
-            mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH)
+    case State::WAITING:
+        // --- クリック処理 ---
+        if (flagImg_ && InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_)
         {
-            // img_ を非表示にして再表示タイマーを設定
+            // おもちゃをクリックした → 非表示にして再出現タイマーをリセット
             flagImg_ = false;
-
-            ResetShadow();
-
             isFalling_ = false;
-			activeTimer_ = 0;
 
-            // 完全ランダムな再出現タイマー設定（例：3〜8秒）
-            spawnTimer_ = 180 + rand() % 300; // 180〜480フレーム（約3〜8秒）
-            // 再表示間隔
+            spawnTimer_ = 180 + rand() % 300;
             spawnTimerMultiplier_ = 1.0f;
 
+            ResetShadow();
             count_ = 0;
             return;
         }
-    }
 
-    // --- 再出現タイマー処理 ---
-    if (!flagImg_)
-    {
-        spawnTimer_--;
-
-        // --- 出現タイマー終了 → Toy出現＋落下開始 ---
-        if (spawnTimer_ <= 0)
+        // --- 再出現タイマー処理 ---
+        if (!flagImg_)
         {
-            flagImg_ = true;
-            isFalling_ = true;
-            fallY_ = -100;
-            fallSpeed_ = 0.0f;
+            spawnTimer_--;
+
+            // 出現3秒前から影をフェードイン
+           const int SHADOW_FADE_START = 180;
+            if (spawnTimer_ <= SHADOW_FADE_START && spawnTimer_ > 0)
+            {
+                flagShadow_ = true;
+                shadowAlpha_ += 2.0f;
+                if (shadowAlpha_ > 255.0f) shadowAlpha_ = 255.0f;
+            }
+
+            // --- 出現タイマー終了 → Toy出現＋落下開始 ---
+            if (spawnTimer_ <= 0)
+            {
+                flagImg_ = true;
+                isFalling_ = true;
+                fallY_ = -100;
+                fallSpeed_ = 0.0f;
+
+                flagShadow_ = true;
+                if (shadowAlpha_ < 50.0f) shadowAlpha_ = 50.0f;
+            }
+        }
+
+        // --- 落下演出 ---
+        if (isFalling_)
+        {
+            fallSpeed_ += 1.5f;
+            fallY_ += fallSpeed_;
+
+            shadowAlpha_ += 3.0f;
+            if (shadowAlpha_ > 180.0f) shadowAlpha_ = 180.0f;
+
+            if (fallY_ >= pos_.y)
+            {
+                fallY_ = pos_.y;
+                isFalling_ = false;
+                shadowAlpha_ = 180.0f;
+            }
+        }
+
+        // 落下完了後
+        if (!isFalling_ && flagImg_)
+        {
+            shadowAlpha_ = 180.0f;
+            flagShadow_ = true;
+        }
+
+        // --- Foodのフラグが立っているか確認 ---
+        if (food != nullptr && food->GetFlag() && flagImg_ && !isFalling_)
+        {
+            // Foodに向かって移動開始
+            state_ = State::MOVING;
+            targetPos_ = food->GetPos();
+        }
+        break;
+
+    case State::MOVING:
+    {
+        UpdateMoving();
+
+        // Foodに到達したか確認
+        float dx = targetPos_.x - pos_.x;
+        float dy = targetPos_.y - pos_.y;
+        float distance = sqrt(dx * dx + dy * dy);
+
+        if (distance < 10.0f)
+        {
+            // 到達したので食事状態へ
+            state_ = State::EATING;
+            eatingTimer_ = 0;
+            shakeCount_ = 0;
         }
     }
+    break;
 
+    case State::EATING:
+        UpdateEating();
+        break;
 
-    // --- 落下演出 ---
-    if (isFalling_)
-    {
-        fallSpeed_ += 1.5f; // 重力加速度
-        fallY_ += fallSpeed_;
-
-        if (fallY_ >= pos_.y)
-        {
-            fallY_ = pos_.y;
-            isFalling_ = false;
-        }
+    case State::GAME_OVER:
+        UpdateGameOver();
+        break;
     }
+}
 
+void Toy::UpdateMoving()
+{
+    // Foodに向かって移動
+    float dx = targetPos_.x - pos_.x;
+    float dy = targetPos_.y - pos_.y;
+    float distance = sqrt(dx * dx + dy * dy);
+
+    if (distance > 0.1f)
+    {
+        // 正規化して移動
+        float nx = dx / distance;
+        float ny = dy / distance;
+
+        pos_.x += nx * moveSpeed_;
+        pos_.y += ny * moveSpeed_;
+        fallY_ = pos_.y; // 描画位置も更新
+    }
+}
+
+void Toy::UpdateEating()
+{
+    eatingTimer_++;
+
+    // 上下に細かく震える演出
+    shakeCount_++;
+    shakeOffset_ = sin(shakeCount_ * 1.0f) * 3.0f; // 振幅3ピクセル
+
+    // 制限時間を超えたらゲームオーバー
+    if (eatingTimer_ >= EATING_LIMIT)
+    {
+        state_ = State::GAME_OVER;
+    }
+}
+
+void Toy::UpdateGameOver()
+{
+    // ゲームオーバー演出（必要に応じて実装）
+    // 例：点滅、色変更、拡大など
 }
 
 void Toy::Draw(void)
 {
-
     float halfW = TOY_WID / 2.0f;
     float halfH = TOY_HIG / 2.0f;
 
+    // 影の描画
     DrawShadow();
 
-    // img_の描画
-    if (flagImg_)
+    // おもちゃ本体の描画
+    if (flagImg_ || state_ == State::MOVING || state_ == State::EATING || state_ == State::GAME_OVER)
     {
-        DrawRotaGraph(pos_.x, fallY_, 1.0, 0.0, img_, true);
-        float halfW = TOY_WID / 2.0f;
-        float halfH = TOY_HIG / 2.0f;
+        float drawY = fallY_;
 
+        // 食事中は震え演出を追加
+        if (state_ == State::EATING)
+        {
+            drawY += shakeOffset_;
+        }
+
+        DrawRotaGraph((int)pos_.x, (int)drawY, 1.0, 0.0, img_, true);
+
+        // デバッグ用：当たり判定の可視化
+#ifdef _DEBUG
         DrawBox(
-            pos_.x - halfW, fallY_ - halfH,
-            pos_.x + halfW, fallY_ + halfH,
+            (int)(pos_.x - halfW), (int)(drawY - halfH),
+            (int)(pos_.x + halfW), (int)(drawY + halfH),
             GetColor(0, 0, 255), false);
+
+        // 状態表示
+        const char* stateStr = "";
+        switch (state_)
+        {
+        case State::WAITING: stateStr = "WAITING"; break;
+        case State::MOVING: stateStr = "MOVING"; break;
+        case State::EATING: stateStr = "EATING"; break;
+        case State::GAME_OVER: stateStr = "GAME_OVER"; break;
+        }
+        DrawFormatString((int)pos_.x - 30, (int)pos_.y - 80, GetColor(255, 255, 255),
+            "State: %s", stateStr);
+
+        if (state_ == State::EATING)
+        {
+            DrawFormatString((int)pos_.x - 30, (int)pos_.y - 60, GetColor(255, 255, 0),
+                "Time: %d/%d", eatingTimer_, EATING_LIMIT);
+        }
+#endif
     }
 
-    int color = isMouseOver_ ? GetColor(255, 0, 0) : GetColor(0, 255, 0);
-
-    if (isMouseOver_) {
+    // マウスオーバー時の枠線表示（ゲーム機能）
+    if (isMouseOver_ && state_ == State::WAITING) {
         DrawBox(
-            pos_.x - halfW, pos_.y - halfH,
-            pos_.x + halfW, pos_.y + halfH,
-            color, false);
+            (int)(pos_.x - halfW), (int)(pos_.y - halfH),
+            (int)(pos_.x + halfW), (int)(pos_.y + halfH),
+            GetColor(255, 0, 0), false);
+    }
+
+    // ゲームオーバー時の表示
+    if (state_ == State::GAME_OVER)
+    {
+        DrawFormatString(400, 300, GetColor(255, 0, 0), "GAME OVER!");
     }
 }
 
 void Toy::Release(void)
 {
-
     DeleteGraph(img_);
-	DeleteGraph(shadowImg_);
+    DeleteGraph(shadowImg_);
 }
 
 VECTOR Toy::GetPos(void) const
@@ -178,71 +307,18 @@ bool Toy::GetIsMouseOver() const
     return isMouseOver_;
 }
 
-void Toy::UpdateShadow()
-{
-    // クリックなどでおもちゃが消えている間
-    if (!flagImg_)
-    {
-        spawnTimer_--;
-
-        // 出現3秒前から影をフェードイン
-        if (spawnTimer_ > 0)
-        {
-            if (spawnTimer_ <= 180) // 3秒以内
-            {
-                flagShadow_ = true;
-                shadowAlpha_ += 2.0f;
-                if (shadowAlpha_ > 255.0f) shadowAlpha_ = 255.0f;
-            }
-            else
-            {
-                // 待機中は影を非表示（αは保持）
-                flagShadow_ = false;
-            }
-        }
-        // 落下開始
-        else if (spawnTimer_ <= 0)
-        {
-            flagImg_ = true;
-            isFalling_ = true;
-            fallY_ = -100;
-            fallSpeed_ = 0.0f;
-
-            flagShadow_ = true;
-            if (shadowAlpha_ < 50.0f) shadowAlpha_ = 50.0f;
-        }
-    }
-
-    // 落下中は影を地面に固定・濃くしていく
-    if (isFalling_)
-    {
-        shadowAlpha_ += 3.0f;
-        if (shadowAlpha_ > 180.0f) shadowAlpha_ = 180.0f;
-    }
-
-    // 落下完了後
-    if (!isFalling_ && flagImg_)
-    {
-        shadowAlpha_ = 180.0f;
-        flagShadow_ = true;
-    }
-}
-
 void Toy::DrawShadow()
 {
-    // --- 影を描画 ---
-    if (flagShadow_)
+    if (flagShadow_ || state_ == State::MOVING || state_ == State::EATING)
     {
         int alpha = (int)shadowAlpha_;
         if (alpha > 255) alpha = 255;
         if (alpha < 0) alpha = 0;
 
-        // 影の濃さをAlphaブレンドで描画
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
-        DrawRotaGraph(pos_.x, pos_.y + 10 + 10, 0.1, 0.0, shadowImg_, true);
+        DrawRotaGraph((int)pos_.x, (int)(pos_.y + 20), 0.1, 0.0, shadowImg_, true);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }
-
 }
 
 void Toy::ResetShadow()

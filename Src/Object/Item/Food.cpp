@@ -63,7 +63,7 @@ void Food::Update()
         // 制限時間を超えたらゲームオーバー
         if (activeTimer_ > activeLimit_)
         {
-            isGameOver_ = true;
+            //isGameOver_ = true;
         }
     }
 }

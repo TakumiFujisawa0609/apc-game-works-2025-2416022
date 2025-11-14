@@ -1,79 +1,85 @@
 #pragma once
 #include <DxLib.h>
 
+// 前方宣言
+class Food;
+
 //---------------------------------------------
-// 餌アイテムクラス
+// おもちゃアイテムクラス
 //---------------------------------------------
 class Toy
 {
 public:
-
     static constexpr int TOY_WID = 64;
     static constexpr int TOY_HIG = 64;
 
+    // Toyの状態
+    enum class State {
+        WAITING,      // 待機中（通常状態）
+        MOVING,       // Foodに向かって移動中
+        EATING,       // 餌を食べている
+        GAME_OVER     // ゲームオーバー
+    };
+
     Toy(void);
     ~Toy(void);
-
-    void Init(void);                   // 初期化（画像ロードなど）
-    void Update(void);                 // アニメーション・時間制御
-    void Draw(void);                   // 描画処理
+    void Init(void);
+    void Update(Food* food = nullptr);  // Foodへの参照を受け取る
+    void Draw(void);
     void Release(void);
 
     VECTOR GetPos(void) const;
     bool GetFlag(void) const;
     void SetFlag(bool flag) { flag_ = flag; }
-
     bool GetFlagShadow(void) const;
     void SetFlagShadow(bool flagShadow) { flagShadow_ = flagShadow; }
-
     bool GetIsMouseOver() const;
-
-    bool IsGameOver() const { return isGameOver_; }
-
+    bool IsGameOver() const { return state_ == State::GAME_OVER; }
     bool IsFalling() const { return isFalling_; }
     bool IsLanded() const { return flagImg_ && !isFalling_; }
-
+    bool IsEating() const { return state_ == State::EATING; }
+    State GetState() const { return state_; }
 
 private:
-
+    // 基本情報
     int img_;
-    int img2_;
-
     VECTOR pos_;
     bool flagImg_;
-
     bool flag_;
-
     int count_;
 
-    int spawnTimer_;      // 次の出現までのカウント
-    int spawnInterval_;   // 出現間隔の上限時間（乱数用）
-
-    int spawnTimerBase_ = 180;       // img_ 初期再表示時間（フレーム）
-    float spawnTimerMultiplier_ = 1.0f; // img_ 再表示時間短縮係数
-
-    int activeTimer_;        // 出現中の累積時間（リセットされない）
-    const int activeLimit_ = 600; // 合計10秒（60fps換算）
-    bool isGameOver_;
-
-    int flagSpawn_;
+    // 再出現タイマー
+    int spawnTimer_;
+    int spawnInterval_;
+    int spawnTimerBase_;
+    float spawnTimerMultiplier_;
 
     bool isMouseOver_;
 
     // 落下演出用
-    float fallY_;        // 現在の描画Y位置
-    float fallSpeed_;    // 落下速度
-    bool  isFalling_;    // 落下中フラグ
+    float fallY_;
+    float fallSpeed_;
+    bool isFalling_;
 
-    // --- 影関連 ---
-    int shadowImg_;        // 影の画像
-    bool flagShadow_;      // 影を表示するかどうか
-    int shadowTimer_;      // 落下までの影予告タイマー
-	float shadowAlpha_;    // 影の透明度
+    // 影関連
+    int shadowImg_;
+    bool flagShadow_;
+    int shadowTimer_;
+    float shadowAlpha_;
+
+    // Food連携用
+    State state_;               // 現在の状態
+    VECTOR targetPos_;          // 移動先（Foodの位置）
+    float moveSpeed_;           // 移動速度
+    int eatingTimer_;           // 餌を食べている時間
+    const int EATING_LIMIT = 600;  // 食事制限時間（10秒）
+    float shakeOffset_;         // 震えのオフセット
+    int shakeCount_;            // 震えのカウント
 
 private:
-    void UpdateShadow();
-	void DrawShadow();
+    void DrawShadow();
     void ResetShadow();
-
+    void UpdateMoving();        // 移動処理
+    void UpdateEating();        // 食事処理
+    void UpdateGameOver();      // ゲームオーバー処理
 };

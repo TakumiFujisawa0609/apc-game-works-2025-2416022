@@ -74,6 +74,8 @@ public:
 
 private:
 
+
+
 	// èÛë‘
 	STATE state_;
 	TARGET targetType_ = TARGET::NONE;
@@ -130,6 +132,10 @@ private:
 	virtual void DrawAct(void);
 	virtual void DrawGameover(void);
 	virtual void DrawEnd(void);
+
+	bool ShouldSwitchTarget();
+	void OnArriveTarget();
+	void DrawCommon();
 
 	Food* food_ = nullptr;
 

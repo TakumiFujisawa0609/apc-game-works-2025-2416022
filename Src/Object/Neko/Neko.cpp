@@ -1,5 +1,4 @@
-﻿
-#include "../../Utility/Utility.h"
+﻿#include "../../Utility/Utility.h"
 #include "../../Application.h"
 #include "../../Manager/Generic/InputManager.h"
 #include "Neko.h"
@@ -16,24 +15,23 @@ Neko::~Neko(void)
 
 void Neko::Init(void)
 {
-	img_= LoadGraph((Application::PATH_MODEL + "Nekoproto.jpg").c_str());
+    img_ = LoadGraph((Application::PATH_MODEL + "Nekoproto.jpg").c_str());
 
-	pos_.x = Application::SCREEN_SIZE_X / 2;
-	pos_.y = Application::SCREEN_SIZE_Y / 2+100;
+    pos_.x = Application::SCREEN_SIZE_X / 2;
+    pos_.y = Application::SCREEN_SIZE_Y / 2 + 100;
 
-	moveTimer_ = 0;
-	isMoving_ = true;
-	isMouseOver_ = false;
-	isVisible_ = true;
-	justHidden_ = false;
-	targetType_ = TARGET::NONE;
+    moveTimer_ = 0;
+    isMoving_ = true;
+    isMouseOver_ = false;
+    isVisible_ = true;
+    justHidden_ = false;
+    targetType_ = TARGET::NONE;
 
     ChangeState(STATE::MOVE);
 }
 
 void Neko::Update()
 {
-
     // --- 毎フレーム、マウスがネコの上にあるか判定 ---
     Vector2 mousePos = InputManager::GetInstance().GetMousePos();
     float halfW = NEKO_WID / 2.0f;
@@ -50,9 +48,7 @@ void Neko::Update()
         justHidden_ = false;
 
         // ターゲット優先で状態変更
-        if (food_ && food_->GetFlag()) ChangeState(STATE::EAT);
-        else if (pc_ && pc_->GetFlag()) ChangeState(STATE::PC);
-        else if (tv_ && tv_->GetFlag()) ChangeState(STATE::TV);
+        SelectTarget();
     }
 
     // ネコ非表示でターゲットがない場合は処理終了
@@ -61,31 +57,31 @@ void Neko::Update()
     // --- 状態別更新 ---
     switch (state_)
     {
-    case STATE::STANDBY: 
+    case STATE::STANDBY:
         UpdateStandby();
         break;
-    case STATE::MOVE:    
-        UpdateMove();    
+    case STATE::MOVE:
+        UpdateMove();
         break;
-    case STATE::EAT:     
-        UpdateEat();     
+    case STATE::EAT:
+        UpdateEat();
         break;
-    case STATE::PC:      
-        UpdatePC();      
+    case STATE::PC:
+        UpdatePC();
         break;
-    case STATE::TV:     
-        UpdateTV();      
+    case STATE::TV:
+        UpdateTV();
         break;
-    case STATE::ACT:     
-        UpdateAct();     
+    case STATE::ACT:
+        UpdateAct();
         break;
     case STATE::GAMEOVER:
-        UpdateGameover(); 
+        UpdateGameover();
         break;
-    case STATE::END:     
-        UpdateEnd();     
+    case STATE::END:
+        UpdateEnd();
         break;
-    default: 
+    default:
         break;
     }
 }
@@ -93,7 +89,7 @@ void Neko::Update()
 
 void Neko::Draw(void)
 {
-	if (!isVisible_) return;
+    if (!isVisible_) return;
 
     switch (state_)
     {
@@ -108,11 +104,11 @@ void Neko::Draw(void)
     case Neko::STATE::EAT:
         DrawEat();
         break;
-	case Neko::STATE::PC:
-		DrawPC();
-		break;
-	case Neko::STATE::TV:
-		DrawTV();
+    case Neko::STATE::PC:
+        DrawPC();
+        break;
+    case Neko::STATE::TV:
+        DrawTV();
         break;
     case Neko::STATE::ACT:
         DrawAct();
@@ -126,13 +122,11 @@ void Neko::Draw(void)
     default:
         break;
     }
-	
-
 }
 
 void Neko::Release(void)
 {
-	DeleteGraph(img_);
+    DeleteGraph(img_);
 }
 
 void Neko::SetFood(Food* food)
@@ -147,7 +141,18 @@ void Neko::SetPC(PC* pc)
 
 void Neko::SetTV(TV* tv)
 {
-	tv_ = tv;
+    tv_ = tv;
+}
+
+bool Neko::ShouldSwitchTarget()
+{
+    // Foodが最優先（PC=TVより優先度が高い）
+    if (food_ && food_->GetFlag() && targetType_ != TARGET::FOOD) {
+        return true;
+    }
+
+    // PC=TVは同等の優先度なので、既存のターゲットを継続
+    return false;
 }
 
 void Neko::SelectTarget()
@@ -164,6 +169,7 @@ void Neko::SelectTarget()
         {
             targetType_ = TARGET::FOOD;
             ChangeState(STATE::EAT);
+            return;
         }
         // 現在ターゲットが無効になったら再選択
         else if (
@@ -173,8 +179,10 @@ void Neko::SelectTarget()
         {
             targetType_ = TARGET::NONE;
             SelectTarget(); // 再帰的に再選択
+            return;
         }
 
+        // 現在のターゲットが有効ならそのまま継続
         return;
     }
 
@@ -201,9 +209,6 @@ void Neko::SelectTarget()
             ChangeState(STATE::MOVE);
     }
 }
-
-
-
 
 bool Neko::GetIsMouseOver() const
 {
@@ -260,25 +265,25 @@ void Neko::Move(void)
     if (pos_.x > Application::SCREEN_SIZE_X - NEKO_WID / 2) { pos_.x = Application::SCREEN_SIZE_X - NEKO_WID / 2; moveDirX_ *= -1; }
     if (pos_.y < upperLimit) { pos_.y = upperLimit; moveDirY_ *= -1; }
     if (pos_.y > lowerLimit) { pos_.y = lowerLimit; moveDirY_ *= -1; }
-
-    /*// アニメーション更新
-    if (isMoving_) {
-        frameCounter_++;
-        if (frameCounter_ % 10 == 0) { // 10フレームごとに切り替え
-            imgIndex_ = (imgIndex_ + 1) % 4;
-        }
-    }
-    else {
-        imgIndex_ = 0;
-    }*/
 }
 
+// ========================================
+// ターゲットへの移動処理
+// ========================================
 void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
 {
     float dx = targetPos.x - pos_.x;
     float dy = targetPos.y - pos_.y;
     float len = sqrtf(dx * dx + dy * dy);
 
+    // 到達判定
+    const float ARRIVAL_DISTANCE = 10.0f;
+    if (len < ARRIVAL_DISTANCE) {
+        OnArriveTarget();  // 到達時の処理
+        return;
+    }
+
+    // 移動処理
     if (len > 0.01f) {
         moveDirX_ = dx / len;
         moveDirY_ = dy / len;
@@ -292,45 +297,49 @@ void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
     float speed = 2.0f; // 追跡は少し速く
     pos_.x += moveDirX_ * speed;
     pos_.y += moveDirY_ * speed;
-
-    if (len < 5.0f) // 到達判定
-    {
-        // --- 対象ごとのリアクション ---
-        switch (targetType_)
-        {
-        case TARGET::TV:
-            if (tv_) {
-                //tv_->SetFlag(false);
-                //tv_->ChangeImage(); // TVの画像を変更
-            }
-            break;
-
-        case TARGET::FOOD:
-            if (food_) {
-                //food_->SetFlag(false);
-                //food_->ChangeImage(); // Foodの画像を変更
-            }
-            break;
-
-        case TARGET::PC:
-            if (pc_) {
-                //pc_->SetFlag(false);
-                //pc_->ChangeImage(); // PCの画像を変更
-            }
-            break;
-        }
-
-        // --- ネコを非表示にする ---
-        /*isVisible_ = false;
-		justHidden_ = true;*/
-
-        targetType_ = TARGET::NONE;
-        ChangeState(STATE::STANDBY);
-    }
 }
 
+// ========================================
+// ターゲット到達時の処理
+// ========================================
+void Neko::OnArriveTarget()
+{
+    switch (targetType_)
+    {
+    case TARGET::FOOD:
+        if (food_) {
+            //food_->SetFlag(false);
+            food_->ChangeImage();
+        }
+        break;
 
+    case TARGET::PC:
+        if (pc_) {
+            //pc_->SetFlag(false);
+            pc_->ChangeImage();
+        }
+        break;
 
+    case TARGET::TV:
+        if (tv_) {
+            //tv_->SetFlag(false);
+            tv_->ChangeImage();
+        }
+        break;
+    }
+
+    // ターゲットクリア後、待機状態へ
+    targetType_ = TARGET::NONE;
+    ChangeState(STATE::STANDBY);
+
+    // オプション: 一定時間非表示にする場合
+    // isVisible_ = false;
+    // justHidden_ = true;
+}
+
+// ========================================
+// 状態遷移
+// ========================================
 void Neko::ChangeState(STATE state)
 {
     state_ = state;
@@ -348,12 +357,12 @@ void Neko::ChangeState(STATE state)
     case Neko::STATE::EAT:
         ChangeEat();
         break;
-	case Neko::STATE::PC:
-		ChangePC();
-		break;
-	case Neko::STATE::TV:
-		ChangeTV();
-		break;
+    case Neko::STATE::PC:
+        ChangePC();
+        break;
+    case Neko::STATE::TV:
+        ChangeTV();
+        break;
     case Neko::STATE::ACT:
         ChangeAct();
         break;
@@ -375,7 +384,6 @@ void Neko::ChangeStandby(void)
 
 void Neko::ChangeMove(void)
 {
-    
 }
 
 void Neko::ChangeEat(void)
@@ -404,11 +412,19 @@ void Neko::ChangeEnd(void)
 
 void Neko::UpdateStandby(void)
 {
-	if (--standbyTimer_ <= 0)
-	{
-		ChangeState(STATE::MOVE);
-		//return;
-	}
+    // 待機中でも新しいターゲットが出現したら反応する
+    if ((food_ && food_->GetFlag()) ||
+        (pc_ && pc_->GetFlag()) ||
+        (tv_ && tv_->GetFlag()))
+    {
+        SelectTarget();
+        return;
+    }
+
+    if (--standbyTimer_ <= 0)
+    {
+        ChangeState(STATE::MOVE);
+    }
 }
 
 void Neko::UpdateMove()
@@ -428,10 +444,17 @@ void Neko::UpdateMove()
 
 void Neko::UpdateEat()
 {
+    // 優先度チェック
+    if (ShouldSwitchTarget()) {
+        SelectTarget();
+        return;
+    }
+
+    // ターゲットが無効になったら移動状態へ
     if (!food_ || !food_->GetFlag())
     {
-        ChangeState(STATE::MOVE);
         targetType_ = TARGET::NONE;
+        ChangeState(STATE::MOVE);
         return;
     }
 
@@ -440,18 +463,17 @@ void Neko::UpdateEat()
 
 void Neko::UpdatePC()
 {
-    // 優先度の高いターゲットを毎フレーム確認
-    if (food_ && food_->GetFlag())
-    {
-        // Food が最優先なので状態を切り替える
+    // 優先度チェック
+    if (ShouldSwitchTarget()) {
         SelectTarget();
         return;
     }
 
+    // ターゲットが無効になったら移動状態へ
     if (!pc_ || !pc_->GetFlag())
     {
-        ChangeState(STATE::MOVE);
         targetType_ = TARGET::NONE;
+        ChangeState(STATE::MOVE);
         return;
     }
 
@@ -460,18 +482,17 @@ void Neko::UpdatePC()
 
 void Neko::UpdateTV()
 {
-    // 優先度の高いターゲットを毎フレーム確認
-    if (food_ && food_->GetFlag())
-    {
-        // Food が最優先なので状態を切り替える
+    // 優先度チェック
+    if (ShouldSwitchTarget()) {
         SelectTarget();
         return;
     }
 
+    // ターゲットが無効になったら移動状態へ
     if (!tv_ || !tv_->GetFlag())
     {
-        ChangeState(STATE::MOVE);
         targetType_ = TARGET::NONE;
+        ChangeState(STATE::MOVE);
         return;
     }
 
@@ -490,90 +511,62 @@ void Neko::UpdateEnd(void)
 {
 }
 
-void Neko::DrawStandby(void)
+// ========================================
+// 共通描画処理
+// ========================================
+void Neko::DrawCommon()
 {
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 
+    // デバッグ用: マウスオーバー時に枠を表示
     if (isMouseOver_) {
-        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
+        DrawBox(
+            pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
             pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-            GetColor(255, 0, 0), false);
+            GetColor(255, 0, 0), false
+        );
     }
+}
+
+// ========================================
+// 状態別描画処理（共通処理を呼ぶ）
+// ========================================
+void Neko::DrawStandby(void)
+{
+    DrawCommon();
 }
 
 void Neko::DrawMove(void)
 {
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
-
-    if (isMouseOver_) {
-        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-            GetColor(255, 0, 0), false);
-    }
+    DrawCommon();
 }
 
 void Neko::DrawEat(void)
 {
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
-
-    if (isMouseOver_) {
-        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-            GetColor(255, 0, 0), false);
-    }
+    DrawCommon();
 }
 
 void Neko::DrawPC(void)
 {
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
-
-    if (isMouseOver_) {
-        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-            GetColor(255, 0, 0), false);
-    }
+    DrawCommon();
 }
 
 void Neko::DrawTV(void)
 {
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
-
-    if (isMouseOver_) {
-        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-            GetColor(255, 0, 0), false);
-    }
+    DrawCommon();
 }
 
 void Neko::DrawAct(void)
 {
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
-
-    if (isMouseOver_) {
-        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-            GetColor(255, 0, 0), false);
-    }
+    DrawCommon();
 }
 
 void Neko::DrawGameover(void)
 {
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
-
-    if (isMouseOver_) {
-        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-            GetColor(255, 0, 0), false);
-    }
+    DrawCommon();
 }
 
 void Neko::DrawEnd(void)
 {
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
-
-    if (isMouseOver_) {
-        DrawBox(pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
-            pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
-            GetColor(255, 0, 0), false);
-    }
+    DrawCommon();
 }
