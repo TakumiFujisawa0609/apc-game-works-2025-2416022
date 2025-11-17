@@ -32,6 +32,7 @@ void Toy::Init(void)
     spawnInterval_ = 300;
     spawnTimer_ = 180 + rand() % 300;
     count_ = 0;
+    returnTimer_ = 0;
 
     fallY_ = pos_.y;
     fallSpeed_ = 0.0f;
@@ -80,6 +81,10 @@ void Toy::Update(Food* food)
             // おもちゃをクリックした → 非表示にして再出現タイマーをリセット
             flagImg_ = false;
             isFalling_ = false;
+
+            pos_.x = 900;
+            pos_.y = 650;
+            fallY_ = pos_.y;
 
             spawnTimer_ = 180 + rand() % 300;
             spawnTimerMultiplier_ = 1.0f;
@@ -150,27 +155,69 @@ void Toy::Update(Food* food)
         break;
 
     case State::MOVING:
+    case State::EATING: // MOVINGとEATINGの両方で Food が消えたら戻るチェック
     {
-        UpdateMoving();
-
-        // Foodに到達したか確認
-        float dx = targetPos_.x - pos_.x;
-        float dy = targetPos_.y - pos_.y;
-        float distance = sqrt(dx * dx + dy * dy);
-
-        if (distance < 10.0f)
+        // ★ 修正/追加: Foodがクリックなどで無効になったら、元の位置に戻す
+        if (food == nullptr || !food->GetFlag())
         {
-            // 到達したので食事状態へ
-            state_ = State::EATING;
+            // 状態を RETURNING に変更
+            state_ = State::RETURNING;
+
+            // 止まる
+            targetPos_ = pos_;
+
+            // 立ち止まる時間（例：3秒 = 180フレーム）を設定
+            returnTimer_ = 180;
+
+            // 落下状態やタイマーもリセット（必要に応じて）
+            //isFalling_ = false;
             eatingTimer_ = 0;
             shakeCount_ = 0;
+            return; // ここで処理を終える
+        }
+
+        // MOVING 状態の処理
+        if (state_ == State::MOVING) {
+            UpdateMoving();
+
+            // Foodに到達したか確認
+            float dx = targetPos_.x - pos_.x;
+            float dy = targetPos_.y - pos_.y;
+            float distance = sqrt(dx * dx + dy * dy);
+
+            if (distance < 10.0f)
+            {
+                // 到達したので食事状態へ
+                state_ = State::EATING;
+                eatingTimer_ = 0;
+                shakeCount_ = 0;
+            }
+        }
+
+        // EATING 状態の処理
+        else if (state_ == State::EATING) {
+            UpdateEating();
+        }
+
+    }
+        break;
+
+    case State::RETURNING:
+    {
+        // 立ち止まる
+        if (returnTimer_ > 0)
+        {
+            // タイマーが残っている間は、その場で静止
+            returnTimer_--;
+        }
+        else
+        {
+            // ★ 修正点: タイマーがゼロになったら、その場から動かずに WAITING 状態へ戻る
+            //           (座標の瞬間移動やリセットは行わない)
+            state_ = State::WAITING;
         }
     }
     break;
-
-    case State::EATING:
-        UpdateEating();
-        break;
 
     case State::GAME_OVER:
         UpdateGameOver();
@@ -237,7 +284,7 @@ void Toy::Draw(void)
             drawY += shakeOffset_;
         }
 
-        DrawRotaGraph((int)pos_.x, (int)drawY, 1.0, 0.0, img_, true);
+        DrawRotaGraph((int)pos_.x, (int)drawY, 1.0, 0.0, img_, true,true);
 
         // デバッグ用：当たり判定の可視化
 #ifdef _DEBUG

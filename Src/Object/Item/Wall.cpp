@@ -67,8 +67,7 @@ void Wall::Update()
         float halfW = WALL_WID / 2.0f;
         float halfH = WALL_HIG / 2.0f;
 
-        if (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
-            mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH)
+        if (isMouseOver_)
         {
             flagImg_ = false;
             flagSpawn_ = false;

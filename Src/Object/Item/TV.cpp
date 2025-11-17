@@ -1,11 +1,12 @@
-
 #include "../../Application.h"
 #include "../../Manager/Generic/InputManager.h"
 #include "../../Common/Vector2.h"
 #include "TV.h"
+#include <cstdlib>
 
 TV::TV(void)
 {
+    spawnInterval_ = spawnTimerBase_; // Baseのメンバーを初期化
 }
 
 TV::~TV(void)
@@ -14,53 +15,38 @@ TV::~TV(void)
 
 void TV::Init(void)
 {
-	img_ = LoadGraph((Application::PATH_ITEM + "nc304917.png").c_str());
-	img2_ = LoadGraph((Application::PATH_ITEM + "RQsnx7A.png").c_str());
-
-	imgA_ = LoadGraph((Application::PATH_ITEM + "ノイズ+血.png").c_str());
-	imgB_ = LoadGraph((Application::PATH_ITEM + "ノイズ+赤.png").c_str());
-	imgC_ = LoadGraph((Application::PATH_ITEM + "ノイズ+青.png").c_str());
-	imgD_ = LoadGraph((Application::PATH_ITEM + "ノイズ+緑.png").c_str());
-	imgE_ = LoadGraph((Application::PATH_ITEM + "完全ノイズ.png").c_str());
-
-	pos_.x = 700;
-	pos_.y = 450;
-
-	flag_ = false;
-	isMouseOver_ = false;
-
-	isGameOver_ = false;
-
-    spawnTimer_ = 0;
-    flagSpawn_ = false;
+    // ItemBaseのメンバーを初期化
+    flag_ = false;
+    isMouseOver_ = false;
+    isGameOver_ = false;
+    spawnTimer_ = rand() % spawnTimerBase_; // ランダム初期化
     flagLevel_ = 0;
     progressTimer_ = 0;
+
+    img_ = LoadGraph((Application::PATH_ITEM + "nc304917.png").c_str()); // TV台座
+    img2_ = LoadGraph((Application::PATH_ITEM + "RQsnx7A.png").c_str()); // TV画面（表示時）
+
+    imgA_ = LoadGraph((Application::PATH_ITEM + "ノイズ+血.png").c_str());
+    imgB_ = LoadGraph((Application::PATH_ITEM + "ノイズ+赤.png").c_str());
+    imgC_ = LoadGraph((Application::PATH_ITEM + "ノイズ+青.png").c_str());
+    imgD_ = LoadGraph((Application::PATH_ITEM + "ノイズ+緑.png").c_str());
+    imgE_ = LoadGraph((Application::PATH_ITEM + "完全ノイズ.png").c_str());
+
+    pos_.x = 700;
+    pos_.y = 450;
 }
 
 void TV::Update(void)
 {
     // --- 毎フレーム、マウスが壁の上にあるか判定する ---
-    {
-        Vector2 mousePos = InputManager::GetInstance().GetMousePos();
-        float halfW = TV_WID / 2.0f;
-        float halfH = TV_HIG / 2.0f;
-
-        isMouseOver_ =
-            (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
-                mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
-    }
+    checkMouseOver(TV_WID / 2.0f, TV_HIG / 2.0f);
 
     // --- 再出現処理 ---
     if (!flag_)
     {
-        spawnTimer_++;
-        if (spawnTimer_ >= spawnTimerBase_)
-        {
-            flag_ = true;
-            spawnTimer_ = 0;
-            spawnInterval_ = spawnTimerBase_ + rand() % 180; // 3秒幅ランダム
-        }
-        return; // 表示されていないときはこれ以上進まない
+        // ItemBaseの関数で処理
+        handleSpawning(spawnTimerBase_);
+        if (!flag_) return; // 表示されていないときはこれ以上進まない
     }
 
     // --- クリックで一時的に消す（対処） ---
@@ -68,61 +54,79 @@ void TV::Update(void)
     {
         flag_ = false;
         spawnTimer_ = 0;
+        // spawnInterval_はhandleSpawning内でランダムに再設定されるため、ここでは不要
         return;
     }
 
-    // --- ネコが近いときに異常進行 ---
-    if (flag_ && flagLevel_ < 5)
+    // 1. ミニゲームの有効化が確認されたら
+    /*if (IsMinigameActive())
     {
-        float dx = nekoPos_.x - pos_.x;
-        float dy = nekoPos_.y - pos_.y;
-        float dist = sqrtf(dx * dx + dy * dy);
-
-        if (dist < 150.0f)
+        // 1.1. ミニゲームがまだ開始されていない場合
+        if (!isGamePlaying_)
         {
-            progressTimer_++;
-            if (progressTimer_ > 180) // 約3秒ごとに1段階進行
+            // マウスオーバーしていて、クリックされたらゲーム開始
+            if (GetIsMouseOver() && InputManager::GetInstance().IsTrgMouseLeft())
             {
-                flagLevel_++;
+                isGamePlaying_ = true;
+                InitMinigame();
+            }
+        }
+        // 1.2. ミニゲーム実行中の場合
+        else if (isGamePlaying_)
+        {
+            // ★ ミニゲームの更新ロジックを実行
+            bool isGameCleared = UpdateMinigameLogic();
+
+            if (isGameCleared)
+            {
+                // ミニゲームクリア時のリセット処理
+                flag_ = false;
+                SetMinigameActive(false);
+                isGamePlaying_ = false;
+                flagLevel_ = 0;
                 progressTimer_ = 0;
             }
         }
-        else
-        {
-            progressTimer_ = 0;
-        }
+    }*/
+
+    // --- ネコが近いときに異常進行 ---
+    // ItemBaseの関数で処理
+    if (flag_) {
+        handleProgress(150.0f, 180); // 検出距離150.0f, 3秒(180f)で1段階
     }
-	// --- ゲームオーバー判定 ---
-	isGameOver_ = (flagLevel_ >= 5);
 }
 
 void TV::Draw(void)
 {
-    if(flag_)
-	DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img2_, true);
+    if (flag_)
+        DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img2_, true); // 画面
 
-	if (flag_ && flagLevel_ == 1)
-	{
-		DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, imgA_, true);
-	}
-	else if (flag_ && flagLevel_ == 2)
-	{
-		DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, imgB_, true);
-	}
-    else if (flag_ && flagLevel_ == 3)
-    {
-		DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, imgC_, true);
+    // flagLevelに応じてノイズ画面を描画
+    int drawImg = 0;
+    if (flag_ && flagLevel_ >= 5) {
+        drawImg = imgE_;
     }
-	else if (flag_ && flagLevel_ == 4)
-	{
-		DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, imgD_, true);
-	}
-	else if (flag_ && flagLevel_ >= 5)
-	{
-		DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, imgE_, true);
-	}
+    else if (flag_ && flagLevel_ == 4) {
+        drawImg = imgD_;
+    }
+    else if (flag_ && flagLevel_ == 3) {
+        drawImg = imgC_;
+    }
+    else if (flag_ && flagLevel_ == 2) {
+        drawImg = imgB_;
+    }
+    else if (flag_ && flagLevel_ == 1) {
+        drawImg = imgA_;
+    }
+
+    if (drawImg != 0) {
+        DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, drawImg, true);
+    }
+
+    // 本体
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
 
+    // マウスオーバー枠
     if (isMouseOver_) {
         DrawBox(
             pos_.x - TV_WID / 2.0f, pos_.y - TV_HIG / 2.0f,
@@ -133,36 +137,28 @@ void TV::Draw(void)
 
 void TV::Release(void)
 {
-    DeleteGraph(img_);
+    // 追加の画像を解放
+    DeleteGraph(imgA_);
+    DeleteGraph(imgB_);
+    DeleteGraph(imgC_);
+    DeleteGraph(imgD_);
+    DeleteGraph(imgE_);
+
+    // ItemBaseのReleaseを呼んで img_ と img2_ を解放
+    ItemBase::Release();
 }
 
-VECTOR TV::GetPos(void) const
+VECTOR TV::GetTargetPos() const
 {
-	return pos_;
-}
-
-bool TV::GetFlag(void) const
-{
-	return flag_;
-}
-
-bool TV::GetIsMouseOver() const
-{
-	return isMouseOver_;
-}
-
-void TV::SetNekoPos(const VECTOR& nekoPos)
-{
-    nekoPos_ = nekoPos;
+    VECTOR target = pos_;
+    // 例: TVの足元より少し下にネコを配置するようY座標を調整
+    //target.y += 200;
+    // 必要であれば、TVに対して横にずらしたい場合は target.x も調整してください
+    return target;
 }
 
 void TV::ChangeImage()
 {
     // 新しい画像に切り替え
-    img_ = LoadGraph((Application::PATH_ITEM + "tv_on.png").c_str());
-}
-
-bool TV::IsGameOver() const
-{
-    return isGameOver_;
+    //img_ = LoadGraph((Application::PATH_ITEM + "tv_on.png").c_str());
 }

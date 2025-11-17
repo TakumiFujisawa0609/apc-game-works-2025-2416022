@@ -18,6 +18,7 @@ public:
         WAITING,      // 待機中（通常状態）
         MOVING,       // Foodに向かって移動中
         EATING,       // 餌を食べている
+        RETURNING,    // 元の位置に戻る
         GAME_OVER     // ゲームオーバー
     };
 
@@ -53,6 +54,7 @@ private:
     int spawnInterval_;
     int spawnTimerBase_;
     float spawnTimerMultiplier_;
+    int returnTimer_;
 
     bool isMouseOver_;
 

@@ -1,76 +1,55 @@
 #pragma once
-#include "../../Application.h"
-#include "../../Utility/Utility.h"
+#include "ItemBase.h" // 基底クラスをインクルード
+#include <DxLib.h>
 #include <string>
 
-class PC
+class PC : public ItemBase // ItemBaseを継承
 {
 public:
 
-	static constexpr int PC_WID = 132;
-	static constexpr int PC_HIG = 132;
+    static constexpr int PC_WID = 132; // TVと同じ値
+    static constexpr int PC_HIG = 132;
 
     PC();
     ~PC();
 
-    void Init();
-    void Update();
-    void Draw();
-	void DrawAchievementWindow();
-    void Release();
+    void Init() override;
+    void Update() override;
+    void Draw() override;
+    void Release() override;
 
-    void SetInfoText(const std::string& text);
-    void ChangeImage();
+    // PC固有の描画メソッド
+    void DrawAchievementWindow(void);
 
-    VECTOR GetPos() const;
+    // PC固有のメソッド
     VECTOR GetTargetPos() const;
-    bool GetFlag() const;
-	bool SetFlag(bool flag){ flag_ = flag; return flag_; }
-	bool GetFlagImg() const { return flagImg_; }
-	bool IsGameOver() const { return isGameOver_; }
-	void SetNekoPos(const VECTOR& nekoPos) { nekoPos_ = nekoPos; }
-    bool GetIsMouseOver() const;
+    void SetInfoText(const std::string& text);
+    bool GetFlagImg() const { return flagImg_; }
+    void ChangeImage(); // 画像切替（継承元のimg_を書き換える）
 
 private:
-    VECTOR pos_;       // PC座標
-    VECTOR closePos_;  // 閉じるボタン座標
+    // ItemBaseに img_, img2_ はある
+    int img3_; // NyanCat画像
 
+    bool flagImg_; // 実績ウィンドウ表示フラグ
+    int infoImg_; // 実績ウィンドウ背景画像
+
+    std::string infoText_; // 実績ウィンドウのテキスト
+
+    // 閉じるボタン関連
+    VECTOR closePos_;
     int closeW_;
     int closeH_;
-
-    bool flag_;        // ランダムでアクティブになるフラグ
-    bool flagImg_;     // 実績ウィンドウ表示中か
-    bool isMouseOver_;
-
-    int spawnInterval_;  // 出現間隔
-    int spawnTimer_;     // 出現タイマー
-
-    int count_;          // 使用用途に応じてカウント可能
-    int activeTimer_;    // 累積時間カウンタ
-    bool isGameOver_;    // ゲームオーバーフラグ
-
-    int img_;            // PC画像
-	int img2_;           
-	int img3_;           // 異常用画像
-    int infoImg_;        // 実績ウィンドウ背景
-    std::string infoText_;
-
-    // --- マウス用 ---
     VECTOR cancelPos_;
     int cancelW_;
     int cancelH_;
 
-    VECTOR nekoPos_;        // ネコの現在位置
-    int progressTimer_;     // ネコ滞在タイマー
-    int flagLevel_;         // ネコ滞在段階（0～5）
-    const int maxLevel_ = 5;
-
-    bool flagWindow_ = false; // クリックで開いたPCウィンドウ表示中
-    VECTOR windowPos_;        // ウィンドウの表示位置
-    int windowW_ = 400;       // ウィンドウ幅
-    int windowH_ = 300;       // ウィンドウ高さ
-    VECTOR closePosWindow_;   // 閉じるボタン位置
-    int closeWWindow_ = 100;
-    int closeHWindow_ = 40;
-
+    // ItemBaseで宣言されたメンバーを流用:
+    // VECTOR pos_;
+    // bool flag_;
+    // bool isMouseOver_;
+    // bool isGameOver_;
+    // int spawnTimer_;
+    // int flagLevel_;
+    // VECTOR nekoPos_;
 };

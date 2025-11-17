@@ -21,13 +21,13 @@ void Neko::Init(void)
     pos_.y = Application::SCREEN_SIZE_Y / 2 + 100;
 
     moveTimer_ = 0;
-    isMoving_ = true;
+    isMoving_ = false;
     isMouseOver_ = false;
     isVisible_ = true;
     justHidden_ = false;
     targetType_ = TARGET::NONE;
 
-    ChangeState(STATE::MOVE);
+    ChangeState(STATE::STANDBY);
 }
 
 void Neko::Update()
@@ -205,8 +205,8 @@ void Neko::SelectTarget()
     else
     {
         targetType_ = TARGET::NONE;
-        if (state_ != STATE::MOVE)
-            ChangeState(STATE::MOVE);
+        if (state_ != STATE::STANDBY)
+            ChangeState(STATE::STANDBY);
     }
 }
 
@@ -277,7 +277,7 @@ void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
     float len = sqrtf(dx * dx + dy * dy);
 
     // 到達判定
-    const float ARRIVAL_DISTANCE = 10.0f;
+    const float ARRIVAL_DISTANCE = 2.0f;
     if (len < ARRIVAL_DISTANCE) {
         OnArriveTarget();  // 到達時の処理
         return;
@@ -304,12 +304,16 @@ void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
 // ========================================
 void Neko::OnArriveTarget()
 {
+    // --- ネコの座標をターゲット位置に固定する ---
+    VECTOR targetPos = pos_; // デフォルトは現在の位置
+
     switch (targetType_)
     {
     case TARGET::FOOD:
         if (food_) {
             //food_->SetFlag(false);
             food_->ChangeImage();
+            targetPos = food_->GetPos();
         }
         break;
 
@@ -317,6 +321,8 @@ void Neko::OnArriveTarget()
         if (pc_) {
             //pc_->SetFlag(false);
             pc_->ChangeImage();
+            targetPos = pc_->GetTargetPos();
+            pc_->SetMinigameActive(true);
         }
         break;
 
@@ -324,9 +330,20 @@ void Neko::OnArriveTarget()
         if (tv_) {
             //tv_->SetFlag(false);
             tv_->ChangeImage();
+            targetPos = tv_->GetTargetPos();
+            tv_->SetMinigameActive(true);
         }
         break;
     }
+
+    // 座標を固定
+    pos_ = targetPos;
+    isMoving_ = false;
+    moveDirX_ = 0.0f;
+    moveDirY_ = 0.0f;
+
+    // ★ 状態をリセットすることで、次の Update で余計な処理が走るのを防ぐ
+    state_ = STATE::NONE;
 
     // ターゲットクリア後、待機状態へ
     targetType_ = TARGET::NONE;
@@ -412,18 +429,20 @@ void Neko::ChangeEnd(void)
 
 void Neko::UpdateStandby(void)
 {
-    // 待機中でも新しいターゲットが出現したら反応する
+
+    if (standbyTimer_ > 0)
+    {
+        --standbyTimer_;
+        return; // 待機中は何もしない
+    }
+
+    // 新しいターゲットが出現したら反応する
     if ((food_ && food_->GetFlag()) ||
         (pc_ && pc_->GetFlag()) ||
         (tv_ && tv_->GetFlag()))
     {
         SelectTarget();
         return;
-    }
-
-    if (--standbyTimer_ <= 0)
-    {
-        ChangeState(STATE::MOVE);
     }
 }
 
@@ -439,7 +458,7 @@ void Neko::UpdateMove()
     }
 
     // ターゲットがなければランダム移動
-    Move();
+    //Move();
 }
 
 void Neko::UpdateEat()
@@ -454,7 +473,7 @@ void Neko::UpdateEat()
     if (!food_ || !food_->GetFlag())
     {
         targetType_ = TARGET::NONE;
-        ChangeState(STATE::MOVE);
+        ChangeState(STATE::STANDBY);
         return;
     }
 
@@ -473,7 +492,13 @@ void Neko::UpdatePC()
     if (!pc_ || !pc_->GetFlag())
     {
         targetType_ = TARGET::NONE;
-        ChangeState(STATE::MOVE);
+        ChangeState(STATE::STANDBY);
+        return;
+    }
+
+    if (pc_->IsMinigameActive())
+    {
+        // 静止中のため移動は行わず、UpdatePC() の処理を終了
         return;
     }
 
@@ -491,12 +516,25 @@ void Neko::UpdateTV()
     // ターゲットが無効になったら移動状態へ
     if (!tv_ || !tv_->GetFlag())
     {
+        // ネコの座標はすでに固定されているはずなので、ここではタイマーを設定してSTANDBYに遷移
         targetType_ = TARGET::NONE;
-        ChangeState(STATE::MOVE);
+
+        // 数秒（例：180フレーム = 3秒）待機してから、
+        // UpdateStandby内で次のターゲットを探し始めるようにする
+        ChangeState(STATE::STANDBY);
+
+        // STANDBYに遷移した直後にタイマーを設定する
+        standbyTimer_ = 60; // 3秒待機 (60FPS想定)
         return;
     }
 
-    MoveToTarget(tv_->GetPos(), true);
+    if (tv_->IsMinigameActive())
+    {
+        // 静止中のため移動は行わず、UpdateTV() の処理を終了
+        return;
+    }
+
+    MoveToTarget(tv_->GetTargetPos(), true);
 }
 
 void Neko::UpdateAct(void)
@@ -516,7 +554,23 @@ void Neko::UpdateEnd(void)
 // ========================================
 void Neko::DrawCommon()
 {
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true);
+    bool isReverse = false;
+    if (isMoving_) // 移動中のみ方向で判断
+    {
+        if (moveDirX_ < 0) // 左向きの場合
+        {
+            isReverse = true;
+        }
+    }
+    else // 静止中の場合
+    {
+        // 静止中のデフォルト向き（例: 右向き）
+        // または、最後に移動した方向を記憶する変数を使う
+        // 今回はデフォルトで右向き（反転なし）とする
+        isReverse = false;
+    }
+
+    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true, isReverse);
 
     // デバッグ用: マウスオーバー時に枠を表示
     if (isMouseOver_) {

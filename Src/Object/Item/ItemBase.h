@@ -1,83 +1,70 @@
 #pragma once
+#include "../../Common/Vector2.h"
 #include <DxLib.h>
+#include <string>
 
+// ItemBaseクラス: TVとPCの共通基底クラス
 class ItemBase
 {
 public:
+    ItemBase(int maxLevel = 5);
+    virtual ~ItemBase();
 
-	// 状態
-	enum class STATE
-	{
-		NONE,
-		STANDBY,
-		ACT1,
-		ACT2,
-		DEAD,
-		END,
-	};
+    // 純粋仮想関数: 継承先で必ず実装する
+    virtual void Init(void) = 0;
+    virtual void Update(void) = 0;
+    virtual void Draw(void) = 0;
+    virtual void Release(void);
 
-	// エネミー種別
-	enum class TYPE
-	{
-		FOOD,
-		TOY,
-		WALL,
-		PC,
-	};
+    // 共通のプロパティ
+    VECTOR GetPos(void) const { return pos_; }
+    bool GetFlag(void) const { return flag_; }
+    void SetFlag(bool flag) { flag_ = flag; }
+    bool GetIsMouseOver() const { return isMouseOver_; }
+    bool IsGameOver() const { return isGameOver_; }
 
-	// コンストラクタ
-	ItemBase(void);
+    void SetMinigameActive(bool isActive) { isMinigameActive_ = isActive; }
+    bool IsMinigameActive() const { return isMinigameActive_; }
 
-	// デストラクタ
-	virtual ~ItemBase(void);
+    // ネコの位置設定
+    void SetNekoPos(const VECTOR& nekoPos) { nekoPos_ = nekoPos; }
 
-	// 初期処理
-	void Init(TYPE type, int img);
-	void Update(void);
-	void Draw(void);
-	void Release(void);
-
-	// 状態遷移
-	//void ChangeState(STATE state);
-
-	bool GetIsMouseOver() const;
+    // レベル取得 (ItemBaseで進捗度を管理する想定)
+    void GetFlagLevel(int& level) const { level = flagLevel_; }
 
 protected:
+    // 座標
+    VECTOR pos_;
 
-	// 状態
-	STATE state_;
+    // 画像ハンドル
+    int img_;
+    int img2_;
 
-	// 種別
-	TYPE type_;
+    // 状態フラグ
+    bool flag_ = false;       // アイテムがアクティブ（問題発生中）か
+    bool isMouseOver_ = false; // マウスカーソルが上にあるか
+    bool isGameOver_ = false;  // ゲームオーバー状態か
+    bool isMinigameActive_ = false;
+    bool isGamePlaying_ = false;
 
-	// モデルのハンドルID
-	int img_;
-	VECTOR pos_;
+    // ネコ関連の進行度
+    VECTOR nekoPos_;        // ネコの位置
+    int flagLevel_ = 0;     // 異常の段階レベル (0:正常, 1以上:異常進行)
+    int progressTimer_ = 0; // 異常進行用のタイマー
+    int maxLevel_ = 5; // 最大進行レベル (PCでは5, TVは5として実装)
 
-	int count_;
+    // 再出現/アクティブ化タイマー
+    int spawnTimer_ = 0;    // 次の出現までのカウント
+    int spawnInterval_ = 0; // 出現間隔の基本値
 
-	// パラメータ設定(純粋仮想関数)
-	virtual void SetParam(void) = 0;
+    // --- 共通の処理関数 ---
 
-	/*// 状態遷移
-	virtual void ChangeStandby(void);
-	virtual void ChangeAttack(void);
-	virtual void ChangeHitReact(void);
-	virtual void ChangeDeadReact(void);
-	virtual void ChangeEnd(void);
+    // マウスオーバー判定 (継承先でサイズを指定して呼び出す)
+    void checkMouseOver(float halfW, float halfH);
 
-	// 状態別更新
-	virtual void UpdateStandby(void);
-	virtual void UpdateAttack(void);
-	virtual void UpdateHitReact(void);
-	virtual void UpdateDeadReact(void);
-	virtual void UpdateEnd(void);
+    // ランダム再出現処理
+    void handleSpawning(int baseInterval);
 
-	// 状態別描画
-	virtual void DrawStandby(void);
-	virtual void DrawAttack(void);
-	virtual void DrawHitReact(void);
-	virtual void DrawDeadReact(void);
-	virtual void DrawEnd(void);*/
+    // ネコによる異常進行処理
+    void handleProgress(float detectionDistance, int framesPerLevel);
 };
-

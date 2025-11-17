@@ -5,10 +5,12 @@
 #include <cstdlib>
 
 PC::PC()
-    : flag_(false), flagImg_(false), isMouseOver_(false),
-    spawnInterval_(300), spawnTimer_(0), count_(0), activeTimer_(0), isGameOver_(false),
-    img_(0), infoImg_(0), closeW_(170), closeH_(40)
+// ItemBaseの初期化は自動で行われる
+    : ItemBase(5), flagImg_(false), closeW_(170), closeH_(40),
+    img3_(0), infoImg_(0)
 {
+    // ItemBaseのメンバーをPCに合わせて初期化
+    spawnInterval_ = 300;
 }
 
 PC::~PC()
@@ -17,10 +19,18 @@ PC::~PC()
 
 void PC::Init()
 {
-    img_ = LoadGraph((Application::PATH_ITEM + "nc215732.png").c_str());
-    img2_ = LoadGraph((Application::PATH_ITEM + "nc316039.png").c_str());
-	img3_ = LoadGraph((Application::PATH_ITEM + "NyanCat.png").c_str());
-    infoImg_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str());
+    // ItemBaseのメンバーを初期化
+    flag_ = false;
+    isMouseOver_ = false;
+    isGameOver_ = false;
+    flagLevel_ = 0;
+    progressTimer_ = 0;
+
+    // 画像ロード (img_とimg2_はItemBaseのメンバー)
+    img_ = LoadGraph((Application::PATH_ITEM + "nc215732.png").c_str()); // PC本体
+    img2_ = LoadGraph((Application::PATH_ITEM + "nc316039.png").c_str()); // PC画面
+    img3_ = LoadGraph((Application::PATH_ITEM + "NyanCat.png").c_str()); // 実績画像
+    infoImg_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str()); // 実績背景
     infoText_ = "実績情報なし";
 
     pos_ = { 85, 400 };
@@ -29,43 +39,69 @@ void PC::Init()
     cancelW_ = cancelH_ = 0;
 
     spawnTimer_ = rand() % spawnInterval_;
-
-	flagLevel_ = 0;
 }
 
 void PC::Update()
 {
-    Vector2 mousePos = InputManager::GetInstance().GetMousePos();
-
     // --- マウスオーバー判定 ---
-    float halfW = PC_WID / 2.0f;
-    float halfH = PC_HIG / 2.0f;
-    isMouseOver_ =
-        (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
-            mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
+    checkMouseOver(PC_WID / 2.0f, PC_HIG / 2.0f);
 
     // --- ランダムでアクティブに ---
+    // 実績ウィンドウが開いていない & アクティブでない場合
     if (!flagImg_ && !flag_) {
+        // ItemBaseの関数で処理（PCはTVと異なり再出現時にflag_をfalseに戻さないため、UpdateでhandleSpawningは使用しない）
         spawnTimer_--;
         if (spawnTimer_ <= 0) {
-            flag_ = true;  // PCをアクティブにする
+            flag_ = true; // PCをアクティブにする
             spawnTimer_ = spawnInterval_ + rand() % spawnInterval_;
         }
     }
 
     // --- 実績ウィンドウ表示中 ---
     if (flagImg_) {
+        Vector2 mousePos = InputManager::GetInstance().GetMousePos();
         bool isCloseOver =
             (mousePos.x >= closePos_.x - closeW_ / 2 && mousePos.x <= closePos_.x + closeW_ / 2 &&
                 mousePos.y >= closePos_.y - closeH_ / 2 && mousePos.y <= closePos_.y + closeH_ / 2);
 
         if (InputManager::GetInstance().IsTrgMouseLeft() && isCloseOver) {
             flagImg_ = false;
-			if (flag_)
-				flag_ = false;
+            if (flag_)
+                flag_ = false; // アクティブ状態を解除
         }
         return;
     }
+
+    // 1. ミニゲームの有効化が確認されたら
+    /*if (IsMinigameActive())
+    {
+        // 1.1. ミニゲームがまだ開始されていない場合
+        if (!isGamePlaying_)
+        {
+            // マウスオーバーしていて、クリックされたらゲーム開始
+            if (GetIsMouseOver() && InputManager::GetInstance().IsTrgMouseLeft())
+            {
+                isGamePlaying_ = true;
+                InitMinigame(); 
+            }
+        }
+        // 1.2. ミニゲーム実行中の場合
+        else if (isGamePlaying_)
+        {
+            // ★ ミニゲームの更新ロジックを実行
+            bool isGameCleared = UpdateMinigameLogic();
+
+            if (isGameCleared)
+            {
+                // ミニゲームクリア時のリセット処理
+                flag_ = false;
+                SetMinigameActive(false);
+                isGamePlaying_ = false;
+                flagLevel_ = 0;
+                progressTimer_ = 0;
+            }
+        }
+    }*/
 
     // --- PCクリックでウィンドウを開く ---
     if (InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_) {
@@ -74,11 +110,13 @@ void PC::Update()
 
     // --- PCがアクティブならネコが接近 ---
     if (flag_) {
-        // 距離計算
-        float dx = nekoPos_.x - (pos_.x);
-        float dy = nekoPos_.y - (pos_.y + 200.0f); // GetTargetPosと同じ補正
-        float dist = sqrtf(dx * dx + dy * dy);
+        // PCはターゲット位置に補正があるため、ItemBaseのhandleProgressを直接使用せず、ローカルで処理
+        float targetY = pos_.y + 200.0f; // GetTargetPosと同じ補正
 
+        // 距離計算
+        float dx = nekoPos_.x - pos_.x;
+        float dy = nekoPos_.y - targetY;
+        float dist = sqrtf(dx * dx + dy * dy);
 
         if (dist < 150.0f) { // 接近判定範囲
             progressTimer_++;
@@ -97,18 +135,14 @@ void PC::Update()
     }
 
     // --- ゲームオーバー判定 ---
-    if (flagLevel_ >= maxLevel_) {
-        isGameOver_ = true;
-    }
+    isGameOver_ = (flagLevel_ >= maxLevel_);
 }
-
-
 
 void PC::Draw(void)
 {
     // 通常のPCアイコン描画
     DrawRotaGraph(pos_.x, pos_.y, 0.05, 0.0, img_, true);
-	DrawRotaGraph(pos_.x-100, pos_.y+150, 0.1, 0.0, img2_, true);
+    DrawRotaGraph(pos_.x - 100, pos_.y + 150, 0.1, 0.0, img2_, true);
 
     if (isMouseOver_) {
         DrawBox(
@@ -128,7 +162,7 @@ void PC::DrawAchievementWindow(void)
 
     // テキスト or 画像切り替え
     if (flag_) {
-        DrawRotaGraph(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2, 1.5,0.0,img3_, true);
+        DrawRotaGraph(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2, 1.5, 0.0, img3_, true);
     }
     else {
         int textW = GetDrawStringWidth(infoText_.c_str(), (int)infoText_.size());
@@ -137,10 +171,11 @@ void PC::DrawAchievementWindow(void)
     }
 
     // 閉じるボタン
-    bool isOver = (InputManager::GetInstance().GetMousePos().x >= closePos_.x - closeW_ / 2 &&
-        InputManager::GetInstance().GetMousePos().x <= closePos_.x + closeW_ / 2 &&
-        InputManager::GetInstance().GetMousePos().y >= closePos_.y - closeH_ / 2 &&
-        InputManager::GetInstance().GetMousePos().y <= closePos_.y + closeH_ / 2);
+    Vector2 mousePos = InputManager::GetInstance().GetMousePos();
+    bool isOver = (mousePos.x >= closePos_.x - closeW_ / 2 &&
+        mousePos.x <= closePos_.x + closeW_ / 2 &&
+        mousePos.y >= closePos_.y - closeH_ / 2 &&
+        mousePos.y <= closePos_.y + closeH_ / 2);
 
     DrawBox(closePos_.x - closeW_ / 2, closePos_.y - closeH_ / 2,
         closePos_.x + closeW_ / 2, closePos_.y + closeH_ / 2, GetColor(57, 53, 48), true);
@@ -152,13 +187,14 @@ void PC::DrawAchievementWindow(void)
     DrawFormatString(closePos_.x - 60, closePos_.y - 10, GetColor(255, 255, 255), "閉じる");
 }
 
-
-
 void PC::Release()
 {
-    DeleteGraph(img_);
-    DeleteGraph(img2_);
+    // 追加の画像を解放
+    DeleteGraph(img3_);
     DeleteGraph(infoImg_);
+
+    // ItemBaseのReleaseを呼んで img_ と img2_ を解放
+    ItemBase::Release();
 }
 
 void PC::SetInfoText(const std::string& text)
@@ -171,24 +207,9 @@ void PC::ChangeImage()
     img_ = LoadGraph((Application::PATH_ITEM + "pc_on.png").c_str());
 }
 
-VECTOR PC::GetPos() const
-{
-    return pos_;
-}
-
 VECTOR PC::GetTargetPos() const
 {
     VECTOR target = pos_;
     target.y += 200; // ネコの立ち位置例
     return target;
-}
-
-bool PC::GetFlag() const
-{
-    return flag_;
-}
-
-bool PC::GetIsMouseOver() const
-{
-    return isMouseOver_;
 }
