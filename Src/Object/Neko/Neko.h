@@ -94,6 +94,8 @@ private:
 
 	int standbyTimer_ = 0;
 
+	int targetTimer_ = 0;
+
 	bool isMouseOver_;
 
 	bool isVisible_; // •\Ž¦ƒtƒ‰ƒO

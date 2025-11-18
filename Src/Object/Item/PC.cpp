@@ -1,6 +1,7 @@
 ﻿#include "PC.h"
 #include "../../Manager/Generic/InputManager.h"
 #include "../../Application.h"
+#include "../Minigame/PCMinigame.h"
 #include <DxLib.h>
 #include <cstdlib>
 
@@ -11,10 +12,17 @@ PC::PC()
 {
     // ItemBaseのメンバーをPCに合わせて初期化
     spawnInterval_ = 300;
+
+    // ミニゲームインスタンスの生成
+    pcMinigame_ = new PCMinigame();
 }
 
 PC::~PC()
 {
+    if (pcMinigame_) {
+        delete pcMinigame_;
+        pcMinigame_ = nullptr;
+    }
 }
 
 void PC::Init()
@@ -38,6 +46,10 @@ void PC::Init()
     cancelPos_ = { 0, 0 };
     cancelW_ = cancelH_ = 0;
 
+    if (pcMinigame_) {
+        pcMinigame_->Init();
+    }
+
     spawnTimer_ = rand() % spawnInterval_;
 }
 
@@ -47,17 +59,16 @@ void PC::Update()
     checkMouseOver(PC_WID / 2.0f, PC_HIG / 2.0f);
 
     // --- ランダムでアクティブに ---
-    // 実績ウィンドウが開いていない & アクティブでない場合
-    if (!flagImg_ && !flag_) {
-        // ItemBaseの関数で処理（PCはTVと異なり再出現時にflag_をfalseに戻さないため、UpdateでhandleSpawningは使用しない）
+    // 実績ウィンドウが開いていない & アクティブでない & ミニゲーム中でない場合
+    if (!flagImg_ && !isGamePlaying_ && !flag_) { // isGamePlaying_のチェックを追加
         spawnTimer_--;
         if (spawnTimer_ <= 0) {
-            flag_ = true; // PCをアクティブにする
+            flag_ = true;
             spawnTimer_ = spawnInterval_ + rand() % spawnInterval_;
         }
     }
 
-    // --- 実績ウィンドウ表示中 ---
+    // --- 1. 実績ウィンドウ処理 ---
     if (flagImg_) {
         Vector2 mousePos = InputManager::GetInstance().GetMousePos();
         bool isCloseOver =
@@ -66,30 +77,32 @@ void PC::Update()
 
         if (InputManager::GetInstance().IsTrgMouseLeft() && isCloseOver) {
             flagImg_ = false;
-            if (flag_)
-                flag_ = false; // アクティブ状態を解除
+            // 実績はflag_とは独立しているため、flag_はここでは操作しない
+            // 異常が起こっている状態で実績画面を開いても、閉じるときに異常は解除しない
         }
+
+        // 実績ウィンドウが開いている間は他の操作をロックし、進行も止める
         return;
     }
 
-    // 1. ミニゲームの有効化が確認されたら
-    /*if (IsMinigameActive())
+    // --- 2. ミニゲーム開始/実行処理 ---
+    if (IsMinigameActive() && pcMinigame_)
     {
-        // 1.1. ミニゲームがまだ開始されていない場合
+        // 2.1. ミニゲームがまだ開始されていない場合
         if (!isGamePlaying_)
         {
             // マウスオーバーしていて、クリックされたらゲーム開始
             if (GetIsMouseOver() && InputManager::GetInstance().IsTrgMouseLeft())
             {
                 isGamePlaying_ = true;
-                InitMinigame(); 
+                pcMinigame_->Init();
+                return;
             }
         }
-        // 1.2. ミニゲーム実行中の場合
-        else if (isGamePlaying_)
+        // 2.2. ミニゲーム実行中の場合
+        else // if (isGamePlaying_)
         {
-            // ★ ミニゲームの更新ロジックを実行
-            bool isGameCleared = UpdateMinigameLogic();
+            bool isGameCleared = pcMinigame_->UpdateGame();
 
             if (isGameCleared)
             {
@@ -100,33 +113,28 @@ void PC::Update()
                 flagLevel_ = 0;
                 progressTimer_ = 0;
             }
+            // ミニゲーム中も進行処理は続けるため、returnはしない
         }
-    }*/
-
-    // --- PCクリックでウィンドウを開く ---
-    if (InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_) {
-        flagImg_ = true;
     }
 
-    // --- PCがアクティブならネコが接近 ---
-    if (flag_) {
-        // PCはターゲット位置に補正があるため、ItemBaseのhandleProgressを直接使用せず、ローカルで処理
-        float targetY = pos_.y + 200.0f; // GetTargetPosと同じ補正
-
-        // 距離計算
-        float dx = nekoPos_.x - pos_.x;
-        float dy = nekoPos_.y - targetY;
-        float dist = sqrtf(dx * dx + dy * dy);
-
-        if (dist < 150.0f) { // 接近判定範囲
-            progressTimer_++;
-            if (progressTimer_ > 180) { // 約3秒で段階進行
-                if (flagLevel_ < maxLevel_)
-                    flagLevel_++;
-                progressTimer_ = 0;
-            }
+    // --- 3. PCクリックでウィンドウを開く (ミニゲーム中でない場合) ---
+    // ミニゲームがアクティブまたは実行中でない場合に、実績ウィンドウを開けるようにする
+    if (!IsMinigameActive() && !isGamePlaying_)
+    {
+        if (InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_) {
+            flagImg_ = true;
+            // flag_がfalseの時に実績ウィンドウを開いたら、flag_はそのままfalse
         }
-        else {
+    }
+
+
+    // --- 4. PCがアクティブならネコが接近 (異常進行) ---
+    if (flag_&&IsMinigameActive()) {
+
+        progressTimer_++;
+        if (progressTimer_ > 180) {
+            if (flagLevel_ < maxLevel_)
+                flagLevel_++;
             progressTimer_ = 0;
         }
     }
@@ -143,6 +151,10 @@ void PC::Draw(void)
     // 通常のPCアイコン描画
     DrawRotaGraph(pos_.x, pos_.y, 0.05, 0.0, img_, true);
     DrawRotaGraph(pos_.x - 100, pos_.y + 150, 0.1, 0.0, img2_, true);
+
+    if (isGamePlaying_ && pcMinigame_) {
+        pcMinigame_->Draw();
+    }
 
     if (isMouseOver_) {
         DrawBox(

@@ -267,9 +267,6 @@ void Neko::Move(void)
     if (pos_.y > lowerLimit) { pos_.y = lowerLimit; moveDirY_ *= -1; }
 }
 
-// ========================================
-// ターゲットへの移動処理
-// ========================================
 void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
 {
     float dx = targetPos.x - pos_.x;
@@ -299,13 +296,10 @@ void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
     pos_.y += moveDirY_ * speed;
 }
 
-// ========================================
-// ターゲット到達時の処理
-// ========================================
 void Neko::OnArriveTarget()
 {
-    // --- ネコの座標をターゲット位置に固定する ---
-    VECTOR targetPos = pos_; // デフォルトは現在の位置
+    // ネコの座標をターゲット位置に固定する
+    VECTOR targetPos = pos_;
 
     switch (targetType_)
     {
@@ -315,6 +309,9 @@ void Neko::OnArriveTarget()
             food_->ChangeImage();
             targetPos = food_->GetPos();
         }
+        pos_ = targetPos;
+        targetType_ = TARGET::NONE;
+        ChangeState(STATE::STANDBY);
         break;
 
     case TARGET::PC:
@@ -323,6 +320,9 @@ void Neko::OnArriveTarget()
             pc_->ChangeImage();
             targetPos = pc_->GetTargetPos();
             pc_->SetMinigameActive(true);
+
+            pos_ = targetPos;
+            targetTimer_ = 180;
         }
         break;
 
@@ -332,6 +332,9 @@ void Neko::OnArriveTarget()
             tv_->ChangeImage();
             targetPos = tv_->GetTargetPos();
             tv_->SetMinigameActive(true);
+
+            pos_ = targetPos;
+            targetTimer_ = 180;
         }
         break;
     }
@@ -342,21 +345,26 @@ void Neko::OnArriveTarget()
     moveDirX_ = 0.0f;
     moveDirY_ = 0.0f;
 
-    // ★ 状態をリセットすることで、次の Update で余計な処理が走るのを防ぐ
-    state_ = STATE::NONE;
-
-    // ターゲットクリア後、待機状態へ
-    targetType_ = TARGET::NONE;
-    ChangeState(STATE::STANDBY);
+    if (targetType_ == TARGET::FOOD)
+    {
+        // Foodの場合は処理完了
+        targetType_ = TARGET::NONE;
+        ChangeState(STATE::STANDBY);
+    }
+    else if (targetType_ == TARGET::PC || targetType_ == TARGET::TV)
+    {
+    }
+    else {
+        // それ以外のターゲット（NONEなど）の場合はSTANDBYに
+        targetType_ = TARGET::NONE;
+        ChangeState(STATE::STANDBY);
+    }
 
     // オプション: 一定時間非表示にする場合
     // isVisible_ = false;
     // justHidden_ = true;
 }
 
-// ========================================
-// 状態遷移
-// ========================================
 void Neko::ChangeState(STATE state)
 {
     state_ = state;
@@ -498,6 +506,15 @@ void Neko::UpdatePC()
 
     if (pc_->IsMinigameActive())
     {
+        targetTimer_--;
+        if (targetTimer_ <= 0)
+        {
+            // 3秒経過: ターゲットを離れて次の行動へ
+            targetType_ = TARGET::NONE;
+            pc_->SetMinigameActive(false); // ミニゲーム準備フラグを解除
+            ChangeState(STATE::STANDBY);
+            return;
+        }
         // 静止中のため移動は行わず、UpdatePC() の処理を終了
         return;
     }
@@ -516,20 +533,22 @@ void Neko::UpdateTV()
     // ターゲットが無効になったら移動状態へ
     if (!tv_ || !tv_->GetFlag())
     {
-        // ネコの座標はすでに固定されているはずなので、ここではタイマーを設定してSTANDBYに遷移
         targetType_ = TARGET::NONE;
-
-        // 数秒（例：180フレーム = 3秒）待機してから、
-        // UpdateStandby内で次のターゲットを探し始めるようにする
         ChangeState(STATE::STANDBY);
-
-        // STANDBYに遷移した直後にタイマーを設定する
-        standbyTimer_ = 60; // 3秒待機 (60FPS想定)
         return;
     }
 
     if (tv_->IsMinigameActive())
     {
+        targetTimer_--;
+        if (targetTimer_ <= 0)
+        {
+            // 3秒経過: ターゲットを離れて次の行動へ
+            targetType_ = TARGET::NONE;
+            tv_->SetMinigameActive(false); // ミニゲーム準備フラグを解除
+            ChangeState(STATE::STANDBY);
+            return;
+        }
         // 静止中のため移動は行わず、UpdateTV() の処理を終了
         return;
     }

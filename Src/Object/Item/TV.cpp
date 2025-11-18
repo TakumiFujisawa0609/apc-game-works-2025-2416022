@@ -2,15 +2,21 @@
 #include "../../Manager/Generic/InputManager.h"
 #include "../../Common/Vector2.h"
 #include "TV.h"
+#include "../Minigame/TVMinigame.h"
 #include <cstdlib>
 
 TV::TV(void)
 {
     spawnInterval_ = spawnTimerBase_; // Baseのメンバーを初期化
+    tvMinigame_ = new TVMinigame();
 }
 
 TV::~TV(void)
 {
+    if (tvMinigame_) {
+        delete tvMinigame_;
+        tvMinigame_ = nullptr;
+    }
 }
 
 void TV::Init(void)
@@ -49,51 +55,57 @@ void TV::Update(void)
         if (!flag_) return; // 表示されていないときはこれ以上進まない
     }
 
-    // --- クリックで一時的に消す（対処） ---
-    if (flag_ && InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_)
+    if (IsMinigameActive() && tvMinigame_) // ネコ到達 = ミニゲーム準備完了
     {
-        flag_ = false;
-        spawnTimer_ = 0;
-        // spawnInterval_はhandleSpawning内でランダムに再設定されるため、ここでは不要
-        return;
-    }
-
-    // 1. ミニゲームの有効化が確認されたら
-    /*if (IsMinigameActive())
-    {
-        // 1.1. ミニゲームがまだ開始されていない場合
         if (!isGamePlaying_)
         {
             // マウスオーバーしていて、クリックされたらゲーム開始
             if (GetIsMouseOver() && InputManager::GetInstance().IsTrgMouseLeft())
             {
                 isGamePlaying_ = true;
-                InitMinigame();
+                tvMinigame_->Init();
+                return; // クリックでゲームが開始されたら、以降の処理はスキップ
             }
         }
-        // 1.2. ミニゲーム実行中の場合
-        else if (isGamePlaying_)
+        else // if (isGamePlaying_)
         {
-            // ★ ミニゲームの更新ロジックを実行
-            bool isGameCleared = UpdateMinigameLogic();
+            bool isGameCleared = tvMinigame_->UpdateGame();
 
             if (isGameCleared)
             {
-                // ミニゲームクリア時のリセット処理
                 flag_ = false;
                 SetMinigameActive(false);
                 isGamePlaying_ = false;
                 flagLevel_ = 0;
                 progressTimer_ = 0;
             }
+            // ミニゲーム中も進行処理は続けるため、returnはしない
         }
-    }*/
-
-    // --- ネコが近いときに異常進行 ---
-    // ItemBaseの関数で処理
-    if (flag_) {
-        handleProgress(150.0f, 180); // 検出距離150.0f, 3秒(180f)で1段階
     }
+
+    // ミニゲーム準備/実行中でない場合
+    if (!IsMinigameActive() && !isGamePlaying_&&flag_)
+    {
+        if (InputManager::GetInstance().IsTrgMouseLeft() && isMouseOver_)
+        {
+        }
+    }
+
+    if (flag_&&IsMinigameActive()) {
+        progressTimer_++;
+        if (progressTimer_ > 180) { // 3秒(180f)で1段階進行 (PCと同じ)
+            if (flagLevel_ < maxLevel_)
+                flagLevel_++;
+            progressTimer_ = 0;
+        }
+    }
+    else {
+        progressTimer_ = 0;
+    }
+
+    // ゲームオーバー判定 (通常はUpdateの最後にあるはずです)
+    isGameOver_ = (flagLevel_ >= maxLevel_);
+
 }
 
 void TV::Draw(void)

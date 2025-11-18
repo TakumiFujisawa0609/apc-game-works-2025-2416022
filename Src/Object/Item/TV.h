@@ -2,6 +2,8 @@
 #include "ItemBase.h" // 基底クラスをインクルード
 #include <DxLib.h>
 
+class TVMinigame;
+
 class TV : public ItemBase // ItemBaseを継承
 {
 public:
@@ -23,6 +25,10 @@ public:
 	void ChangeImage(); // 画像切替（継承元のimg_を書き換える）
 
 private:
+
+	bool isGamePlaying_ = false;
+	TVMinigame* tvMinigame_ = nullptr;
+
 	// 個別の画像ハンドル (img_, img2_ は ItemBase へ移動)
 	int imgA_;
 	int imgB_;

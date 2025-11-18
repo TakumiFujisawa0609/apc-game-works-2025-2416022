@@ -3,6 +3,8 @@
 #include <DxLib.h>
 #include <string>
 
+class PCMinigame;
+
 class PC : public ItemBase // ItemBase‚ğŒp³
 {
 public:
@@ -28,6 +30,11 @@ public:
     void ChangeImage(); // ‰æ‘œØ‘ÖiŒp³Œ³‚Ìimg_‚ğ‘‚«Š·‚¦‚éj
 
 private:
+
+
+    bool isGamePlaying_ = false;
+    PCMinigame* pcMinigame_;
+
     // ItemBase‚É img_, img2_ ‚Í‚ ‚é
     int img3_; // NyanCat‰æ‘œ
 
