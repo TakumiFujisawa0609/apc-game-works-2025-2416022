@@ -67,6 +67,16 @@ void SceneGame::Init(void)
 	img5_ = LoadGraph((Application::PATH_STAGE + "白円.png").c_str());
 	img6_ = LoadGraph((Application::PATH_ITEM + "NyanCat.png").c_str());
 
+	for (int i = 0; i < 8; ++i) {
+		std::string filename = "ぬいぐるみ" + std::to_string(i + 1) + ".png"; // フレーム1から始まる場合
+		toyAnimationHandles_[i] = LoadGraph((Application::PATH_ITEM + filename).c_str());
+		if (toyAnimationHandles_[i] == -1) {
+			// ロード失敗時のエラー処理
+			// DebugBreak(); またはログ出力
+		}
+	}
+	currentAnimationFrame_ = 0;
+
 
 	fontHandle=CreateFontToHandle(NULL, 18, 9,-1);
 }
@@ -160,7 +170,7 @@ void SceneGame::Update(void)
 	}
 
 	// --- PC ゲームオーバー判定 ---
-	if (pc_->IsGameOver())
+	/*if (pc_->IsGameOver())
 	{
 		StartGameOver(GameOverSource::PC);
 		return;
@@ -171,7 +181,7 @@ void SceneGame::Update(void)
 	{
 		StartGameOver(GameOverSource::TV);
 		return;
-	}
+	}*/
 
 	// --- ゲームクリアタイマー ---
 	count_++;
@@ -244,10 +254,15 @@ void SceneGame::Draw(void)
 				Application::SCREEN_SIZE_Y / 2,
 				1.0, 0.0, img4_, true);
 			// --- ゲームオーバー画像 ---
-			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
-				Application::SCREEN_SIZE_Y / 2,
-				1.0, 0.0, img5_, true);
-			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "ネコが怖がるようなものを放置してはいけません。", GetColor(255, 0, 0), fontHandle);
+			DrawRotaGraph(300,600,1.0, 0.0, img5_, true);
+			int currentFrame = gameOverTimer_ / (GAMEOVER_WAIT_ / 8);
+			if (currentFrame >= 8)
+			{
+				currentFrame = 8 - 1; // 最後のフレームで固定
+			}
+			// アニメーションフレームを描画
+			DrawRotaGraph(300,600,0.1, 0.0, toyAnimationHandles_[currentFrame], true);
+			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "おもちゃを放置してはいけません。特に上から落ちてくるようなおもちゃを。", GetColor(255, 0, 0), fontHandle);
 		}
 		else if (gameOverSource_ == GameOverSource::PC)
 		{
@@ -265,10 +280,10 @@ void SceneGame::Draw(void)
 			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
 				Application::SCREEN_SIZE_Y / 2,
 				1.0, 0.0, img4_, true);
+			//SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
 			// --- ゲームオーバー画像 ---
-			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
-				Application::SCREEN_SIZE_Y / 2,
-				1.0, 0.0, img5_, true);
+			DrawRotaGraph(700,450,1.0, 0.0, img5_, true);
+			//SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 			//DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "テレビの放置は良くありません。ネコの管理もあなたの仕事です。", GetColor(255, 0, 0), fontHandle);
 		}
 	}
@@ -411,10 +426,14 @@ void SceneGame::DrawInfo()
 	}
 	else if (toy_->GetIsMouseOver())
 	{
-		if (toy_->IsFalling() || (toy_->GetFlagShadow() && !toy_->IsLanded()))
+
+		if (toy_->IsEating())
+			infoText = "おもちゃが餌を食べている！";
+		else if (toy_->IsFalling() || (toy_->GetFlagShadow() && !toy_->IsLanded()))
 			infoText = "…？";
 		else if (toy_->IsLanded())
 			infoText = "おもちゃが放置されている…？";
+		
 	}
 	else if (food_->GetIsMouseOver())
 	{

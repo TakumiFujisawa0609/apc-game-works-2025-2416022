@@ -44,10 +44,20 @@ public:
 private:
     // 基本情報
     int img_;
+    int img2_;
     VECTOR pos_;
     bool flagImg_;
     bool flag_;
     int count_;
+
+    int imgA_;
+    int imgB_;
+    int imgC_;
+    int imgD_;
+    int imgE_;
+    int imgF_;
+    int imgG_;
+    int imgH_;
 
     // 再出現タイマー
     int spawnTimer_;
@@ -74,7 +84,7 @@ private:
     VECTOR targetPos_;          // 移動先（Foodの位置）
     float moveSpeed_;           // 移動速度
     int eatingTimer_;           // 餌を食べている時間
-    const int EATING_LIMIT = 600;  // 食事制限時間（10秒）
+    const int EATING_LIMIT = 300;  // 食事制限時間
     float shakeOffset_;         // 震えのオフセット
     int shakeCount_;            // 震えのカウント
 

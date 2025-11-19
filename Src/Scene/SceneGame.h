@@ -1,9 +1,6 @@
 #pragma once
 
 #include<memory>
-
-
-
 #include "SceneBase.h"
 #include "../Application.h"
 
@@ -21,6 +18,8 @@ class Message;
 class SceneGame : public SceneBase
 {
 public:
+
+	int toyAnimationHandles_[8];
 
 	enum class GameOverSource
 	{
@@ -55,6 +54,10 @@ public:
 	void DrawInfo(void);
 
 private:
+
+	
+
+	int currentAnimationFrame_;
 
 	//描画(デバッグ)
 	void DrawDebug(void);

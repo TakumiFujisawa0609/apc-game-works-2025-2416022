@@ -18,7 +18,18 @@ void Toy::Init(void)
 {
     // 画像読み込み
     img_ = LoadGraph((Application::PATH_ITEM + "nc279907.png").c_str());
+    img2_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ.png").c_str());
     shadowImg_ = LoadGraph((Application::PATH_ITEM + "nc305932.png").c_str());
+
+    imgA_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ1.png").c_str());
+    imgB_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ2.png").c_str());
+    imgC_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ3.png").c_str());
+    imgD_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ4.png").c_str());
+    imgE_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ5.png").c_str());
+    imgF_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ6.png").c_str());
+    imgG_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ7.png").c_str());
+    imgH_ = LoadGraph((Application::PATH_ITEM + "ぬいぐるみ8.png").c_str());
+
 
     pos_.x = 900;
     pos_.y = 650;
@@ -324,7 +335,7 @@ void Toy::Draw(void)
     // ゲームオーバー時の表示
     if (state_ == State::GAME_OVER)
     {
-        DrawFormatString(400, 300, GetColor(255, 0, 0), "GAME OVER!");
+        DeleteGraph(img_);
     }
 }
 

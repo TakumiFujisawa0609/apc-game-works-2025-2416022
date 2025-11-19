@@ -33,10 +33,10 @@ void TV::Init(void)
     img2_ = LoadGraph((Application::PATH_ITEM + "RQsnx7A.png").c_str()); // TV画面（表示時）
 
     imgA_ = LoadGraph((Application::PATH_ITEM + "ノイズ+血.png").c_str());
-    imgB_ = LoadGraph((Application::PATH_ITEM + "nc207710.png").c_str());
-    imgC_ = LoadGraph((Application::PATH_ITEM + "ノイズ+青.png").c_str());
-    imgD_ = LoadGraph((Application::PATH_ITEM + "ノイズ+緑.png").c_str());
-    imgE_ = LoadGraph((Application::PATH_ITEM + "完全ノイズ.png").c_str());
+    imgB_ = LoadGraph((Application::PATH_ITEM + "画面1.png").c_str());
+    imgC_ = LoadGraph((Application::PATH_ITEM + "画面2.png").c_str());
+    imgD_ = LoadGraph((Application::PATH_ITEM + "画面3.png").c_str());
+    imgE_ = LoadGraph((Application::PATH_ITEM + "画面4.png").c_str());
 
     pos_.x = 700;
     pos_.y = 450;
