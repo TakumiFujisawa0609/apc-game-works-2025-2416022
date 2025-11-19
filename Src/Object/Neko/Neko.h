@@ -90,11 +90,16 @@ private:
 	//int frameCounter_;    // アニメーション用カウンタ
 	bool isMoving_;       // 移動中か停止中か
 
+	bool justChangedState_;
+
 	int moveTimer_;
 
 	int standbyTimer_ = 0;
 
 	int targetTimer_ = 0;
+
+	TARGET lastTargetType_ = TARGET::NONE;
+	int targetCoolDown_ = 0;
 
 	bool isMouseOver_;
 

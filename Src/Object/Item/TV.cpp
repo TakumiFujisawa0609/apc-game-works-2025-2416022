@@ -33,7 +33,7 @@ void TV::Init(void)
     img2_ = LoadGraph((Application::PATH_ITEM + "RQsnx7A.png").c_str()); // TV画面（表示時）
 
     imgA_ = LoadGraph((Application::PATH_ITEM + "ノイズ+血.png").c_str());
-    imgB_ = LoadGraph((Application::PATH_ITEM + "ノイズ+赤.png").c_str());
+    imgB_ = LoadGraph((Application::PATH_ITEM + "nc207710.png").c_str());
     imgC_ = LoadGraph((Application::PATH_ITEM + "ノイズ+青.png").c_str());
     imgD_ = LoadGraph((Application::PATH_ITEM + "ノイズ+緑.png").c_str());
     imgE_ = LoadGraph((Application::PATH_ITEM + "完全ノイズ.png").c_str());
@@ -62,9 +62,13 @@ void TV::Update(void)
             // マウスオーバーしていて、クリックされたらゲーム開始
             if (GetIsMouseOver() && InputManager::GetInstance().IsTrgMouseLeft())
             {
-                isGamePlaying_ = true;
-                tvMinigame_->Init();
-                return; // クリックでゲームが開始されたら、以降の処理はスキップ
+                flag_ = false;                  // TVの表示フラグをOFF
+                SetMinigameActive(false);       // ミニゲーム準備完了フラグをOFF (ネコを解放)
+                isGamePlaying_ = false;         // ゲーム中フラグをOFF (元々falseですが念のため)
+                flagLevel_ = 0;                 // 進行度をリセット
+                progressTimer_ = 0;             // 進行タイマーをリセット
+
+                return;
             }
         }
         else // if (isGamePlaying_)
@@ -91,7 +95,7 @@ void TV::Update(void)
         }
     }
 
-    if (flag_&&IsMinigameActive()) {
+    if (flag_/* && IsMinigameActive()*/ ) {
         progressTimer_++;
         if (progressTimer_ > 180) { // 3秒(180f)で1段階進行 (PCと同じ)
             if (flagLevel_ < maxLevel_)

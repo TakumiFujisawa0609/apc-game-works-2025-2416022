@@ -25,7 +25,9 @@ void Neko::Init(void)
     isMouseOver_ = false;
     isVisible_ = true;
     justHidden_ = false;
+    justChangedState_ = false;
     targetType_ = TARGET::NONE;
+    targetTimer_ = 0;
 
     ChangeState(STATE::STANDBY);
 }
@@ -53,6 +55,10 @@ void Neko::Update()
 
     // ネコ非表示でターゲットがない場合は処理終了
     if (!isVisible_) return;
+
+    if (targetCoolDown_ > 0) {
+        targetCoolDown_--;
+    }
 
     // --- 状態別更新 ---
     switch (state_)
@@ -146,36 +152,72 @@ void Neko::SetTV(TV* tv)
 
 bool Neko::ShouldSwitchTarget()
 {
-    // Foodが最優先（PC=TVより優先度が高い）
+    // Foodが最優先
     if (food_ && food_->GetFlag() && targetType_ != TARGET::FOOD) {
         return true;
     }
 
-    // PC=TVは同等の優先度なので、既存のターゲットを継続
+    // クールダウンチェック
+    bool isPCCoolDown = (lastTargetType_ == TARGET::PC && targetCoolDown_ > 0);
+    bool isTVCoolDown = (lastTargetType_ == TARGET::TV && targetCoolDown_ > 0);
+
+    // PCが現在のターゲットであり、TVが有効でクールダウン中でないなら、切り替えを許可
+    if (targetType_ == TARGET::PC && tv_ && tv_->GetFlag() && !isTVCoolDown) {
+        return true;
+    }
+
+    // TVが現在のターゲットであり、PCが有効でクールダウン中でないなら、切り替えを許可
+    if (targetType_ == TARGET::TV && pc_ && pc_->GetFlag() && !isPCCoolDown) {
+        return true;
+    }
+
     return false;
 }
 
 void Neko::SelectTarget()
 {
     bool foodValid = (food_ && food_->GetFlag());
-    bool pcValid = (pc_ && pc_->GetFlag());
-    bool tvValid = (tv_ && tv_->GetFlag());
+    bool pcFlagValid = (pc_ && pc_->GetFlag());
+    bool tvFlagValid = (tv_ && tv_->GetFlag());
+
+    // クールダウンチェックをターゲット選択に追加
+    bool isPCCoolDown = (lastTargetType_ == TARGET::PC && targetCoolDown_ > 0);
+    bool isTVCoolDown = (lastTargetType_ == TARGET::TV && targetCoolDown_ > 0);
+
+    bool pcValid = pcFlagValid && !isPCCoolDown; // クールダウン中は無効
+    bool tvValid = tvFlagValid && !isTVCoolDown; // クールダウン中は無効
 
     // すでにターゲットがある場合の上書きルール
     if (targetType_ != TARGET::NONE)
     {
-        // Food が出現した場合は最優先で上書き
+        // 1. Food が出現した場合は最優先で上書き
         if (foodValid && targetType_ != TARGET::FOOD)
         {
             targetType_ = TARGET::FOOD;
             ChangeState(STATE::EAT);
             return;
         }
-        // 現在ターゲットが無効になったら再選択
+
+        // 2. PCにいるときにTVが有効/TVにいるときにPCが有効なら上書き
+        // ShouldSwitchTarget() が true を返している前提
+        /*if (targetType_ == TARGET::PC && tvValid)
+        {
+            targetType_ = TARGET::TV;
+            ChangeState(STATE::TV);
+            return;
+        }
+        if (targetType_ == TARGET::TV && pcValid)
+        {
+            targetType_ = TARGET::PC;
+            ChangeState(STATE::PC);
+            return;
+        }*/
+
+        // 3. 現在ターゲットが無効になったら再選択
         else if (
             (targetType_ == TARGET::FOOD && !foodValid) ||
-            (targetType_ == TARGET::PC && !pcValid) ||
-            (targetType_ == TARGET::TV && !tvValid))
+            (targetType_ == TARGET::PC && !pcValid) || // pcValid を使用
+            (targetType_ == TARGET::TV && !tvValid))   // tvValid を使用
         {
             targetType_ = TARGET::NONE;
             SelectTarget(); // 再帰的に再選択
@@ -186,27 +228,51 @@ void Neko::SelectTarget()
         return;
     }
 
-    // --- 新規ターゲット選択 ---
+    // --- 新規ターゲット選択 (targetType_ == TARGET::NONE) ---
     if (foodValid)
     {
         targetType_ = TARGET::FOOD;
         ChangeState(STATE::EAT);
     }
-    else if (pcValid)
-    {
-        targetType_ = TARGET::PC;
-        ChangeState(STATE::PC);
-    }
-    else if (tvValid)
-    {
-        targetType_ = TARGET::TV;
-        ChangeState(STATE::TV);
-    }
     else
     {
-        targetType_ = TARGET::NONE;
-        if (state_ != STATE::STANDBY)
-            ChangeState(STATE::STANDBY);
+        TARGET nextTarget = TARGET::NONE;
+
+        if (lastTargetType_ == TARGET::PC)
+        {
+            // PC滞在後: TVを優先してチェック
+            if (tvValid) { nextTarget = TARGET::TV; }
+            else if (pcValid) { nextTarget = TARGET::PC; }
+        }
+        else if (lastTargetType_ == TARGET::TV)
+        {
+            // TV滞在後: PCを優先してチェック
+            if (pcValid) { nextTarget = TARGET::PC; }
+            else if (tvValid) { nextTarget = TARGET::TV; }
+        }
+        else // lastTargetType_ が NONE, FOOD, または初期状態の場合（デフォルトの優先順位）
+        {
+            // デフォルト: PCを優先してチェック
+            if (pcValid) { nextTarget = TARGET::PC; }
+            else if (tvValid) { nextTarget = TARGET::TV; }
+        }
+
+        if (nextTarget == TARGET::PC)
+        {
+            targetType_ = TARGET::PC;
+            ChangeState(STATE::PC);
+        }
+        else if (nextTarget == TARGET::TV)
+        {
+            targetType_ = TARGET::TV;
+            ChangeState(STATE::TV);
+        }
+        else
+        {
+            targetType_ = TARGET::NONE;
+            if (state_ != STATE::STANDBY)
+                ChangeState(STATE::STANDBY);
+        }
     }
 }
 
@@ -305,7 +371,6 @@ void Neko::OnArriveTarget()
     {
     case TARGET::FOOD:
         if (food_) {
-            //food_->SetFlag(false);
             food_->ChangeImage();
             targetPos = food_->GetPos();
         }
@@ -316,25 +381,27 @@ void Neko::OnArriveTarget()
 
     case TARGET::PC:
         if (pc_) {
-            //pc_->SetFlag(false);
             pc_->ChangeImage();
             targetPos = pc_->GetTargetPos();
-            pc_->SetMinigameActive(true);
-
+            pc_->SetMinigameActive(true);  // ミニゲーム有効化
             pos_ = targetPos;
+
+            // 到着後の待機タイマー設定（3秒）
             targetTimer_ = 180;
+            // ターゲットは維持したまま（STATE::PCのまま）
         }
         break;
 
     case TARGET::TV:
         if (tv_) {
-            //tv_->SetFlag(false);
             tv_->ChangeImage();
             targetPos = tv_->GetTargetPos();
-            tv_->SetMinigameActive(true);
-
+            tv_->SetMinigameActive(true);  // ミニゲーム有効化
             pos_ = targetPos;
+
+            // 到着後の待機タイマー設定（3秒）
             targetTimer_ = 180;
+            // ターゲットは維持したまま（STATE::TVのまま）
         }
         break;
     }
@@ -344,30 +411,12 @@ void Neko::OnArriveTarget()
     isMoving_ = false;
     moveDirX_ = 0.0f;
     moveDirY_ = 0.0f;
-
-    if (targetType_ == TARGET::FOOD)
-    {
-        // Foodの場合は処理完了
-        targetType_ = TARGET::NONE;
-        ChangeState(STATE::STANDBY);
-    }
-    else if (targetType_ == TARGET::PC || targetType_ == TARGET::TV)
-    {
-    }
-    else {
-        // それ以外のターゲット（NONEなど）の場合はSTANDBYに
-        targetType_ = TARGET::NONE;
-        ChangeState(STATE::STANDBY);
-    }
-
-    // オプション: 一定時間非表示にする場合
-    // isVisible_ = false;
-    // justHidden_ = true;
 }
 
 void Neko::ChangeState(STATE state)
 {
     state_ = state;
+    justChangedState_ = true;
 
     switch (state)
     {
@@ -417,10 +466,16 @@ void Neko::ChangeEat(void)
 
 void Neko::ChangePC(void)
 {
+    isMoving_ = true;
+    moveDirX_ = 0.0f; // 移動方向はMoveToTargetで再計算される
+    moveDirY_ = 0.0f;
 }
 
 void Neko::ChangeTV(void)
 {
+    isMoving_ = true;
+    moveDirX_ = 0.0f; // 移動方向はMoveToTargetで再計算される
+    moveDirY_ = 0.0f;
 }
 
 void Neko::ChangeAct(void)
@@ -490,69 +545,110 @@ void Neko::UpdateEat()
 
 void Neko::UpdatePC()
 {
-    // 優先度チェック
-    if (ShouldSwitchTarget()) {
-        SelectTarget();
-        return;
-    }
-
-    // ターゲットが無効になったら移動状態へ
+    // ターゲットが無効になったら待機状態へ
     if (!pc_ || !pc_->GetFlag())
     {
+        targetTimer_ = 0;
         targetType_ = TARGET::NONE;
         ChangeState(STATE::STANDBY);
         return;
     }
 
-    if (pc_->IsMinigameActive())
+    // Foodは最優先で反応
+    if (food_ && food_->GetFlag() && targetType_ != TARGET::FOOD) {
+        targetTimer_ = 0;  // タイマーをリセット
+        SelectTarget();
+        return;
+    }
+
+    // 到着後の待機タイマー処理
+    if (targetTimer_ > 0)
     {
         targetTimer_--;
         if (targetTimer_ <= 0)
         {
-            // 3秒経過: ターゲットを離れて次の行動へ
+            // 待機時間終了: 次の行動へ
             targetType_ = TARGET::NONE;
-            pc_->SetMinigameActive(false); // ミニゲーム準備フラグを解除
+            lastTargetType_ = TARGET::PC;
+            targetCoolDown_ = 120;
+            standbyTimer_ = 0;
             ChangeState(STATE::STANDBY);
             return;
         }
-        // 静止中のため移動は行わず、UpdatePC() の処理を終了
+
+        
+
+        // 待機中はその場に留まる
         return;
     }
 
+    // 状態遷移直後はターゲット切り替えをスキップ
+    /*if (justChangedState_) {
+        justChangedState_ = false;
+    }
+    else {
+        // 優先度チェック（移動中のみ実行）
+        if (ShouldSwitchTarget()) {
+            SelectTarget();
+            return;
+        }
+    }*/
+
+    // ターゲットへ移動
+    isMoving_ = true;
     MoveToTarget(pc_->GetTargetPos(), true);
 }
 
 void Neko::UpdateTV()
 {
-    // 優先度チェック
-    if (ShouldSwitchTarget()) {
-        SelectTarget();
-        return;
-    }
-
-    // ターゲットが無効になったら移動状態へ
+    // ターゲットが無効になったら待機状態へ
     if (!tv_ || !tv_->GetFlag())
     {
+        targetTimer_ = 0;
         targetType_ = TARGET::NONE;
         ChangeState(STATE::STANDBY);
         return;
     }
 
-    if (tv_->IsMinigameActive())
+    // 待機中でもFoodは最優先で反応
+    if (food_ && food_->GetFlag() && targetType_ != TARGET::FOOD) {
+        targetTimer_ = 0;  // タイマーをリセット
+        SelectTarget();
+        return;
+    }
+
+    // 到着後の待機タイマー処理
+    if (targetTimer_ > 0)
     {
         targetTimer_--;
         if (targetTimer_ <= 0)
         {
-            // 3秒経過: ターゲットを離れて次の行動へ
+            // 待機時間終了: 次の行動へ
             targetType_ = TARGET::NONE;
-            tv_->SetMinigameActive(false); // ミニゲーム準備フラグを解除
+            lastTargetType_ = TARGET::TV;
+            targetCoolDown_ = 120;
+            standbyTimer_ = 0;
             ChangeState(STATE::STANDBY);
             return;
         }
-        // 静止中のため移動は行わず、UpdateTV() の処理を終了
+        // 待機中はその場に留まる
         return;
     }
 
+    // 状態遷移直後はターゲット切り替えをスキップ
+    /*if (justChangedState_) {
+        justChangedState_ = false;
+    }
+    else {
+        // 優先度チェック（移動中のみ実行）
+        if (ShouldSwitchTarget()) {
+            SelectTarget();
+            return;
+        }
+    }*/
+
+    // ターゲットへ移動
+    isMoving_ = true;
     MoveToTarget(tv_->GetTargetPos(), true);
 }
 

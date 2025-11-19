@@ -1,5 +1,6 @@
 #pragma once
-#include "ItemBase.h" // 基底クラスをインクルード
+#include "ItemBase.h"
+#include "../Minigame/TVMinigame.h"
 #include <DxLib.h>
 
 class TVMinigame;
@@ -23,6 +24,12 @@ public:
 
 	VECTOR GetTargetPos() const;
 	void ChangeImage(); // 画像切替（継承元のimg_を書き換える）
+
+	// ミニゲームの状態を取得する
+	bool IsGamePlaying() const { return isGamePlaying_; }
+
+	// SceneGameからミニゲームを描画するためにポインタを返す
+	TVMinigame* GetMinigame() const { return tvMinigame_; }
 
 private:
 

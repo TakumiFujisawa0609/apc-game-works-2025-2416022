@@ -26,7 +26,7 @@ void Wall::Init(void)
     srand((unsigned int)time(nullptr));
 
     img_ = LoadGraph((Application::PATH_ITEM + "nc73263_穴.png").c_str());
-    img2_ = LoadGraph((Application::PATH_ITEM + "nc257030.png").c_str());
+    img2_ = LoadGraph((Application::PATH_ITEM + "目.png").c_str());
     
     img4_ = LoadGraph((Application::PATH_ITEM + "nc407592.png").c_str());
 

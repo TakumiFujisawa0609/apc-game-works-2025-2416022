@@ -94,8 +94,12 @@ void PC::Update()
             // マウスオーバーしていて、クリックされたらゲーム開始
             if (GetIsMouseOver() && InputManager::GetInstance().IsTrgMouseLeft())
             {
-                isGamePlaying_ = true;
-                pcMinigame_->Init();
+                flag_ = false;                  // PCアクティブフラグをOFF
+                SetMinigameActive(false);       // ミニゲーム準備完了フラグをOFF (ネコを解放)
+                isGamePlaying_ = false;         // ゲーム中フラグをOFF 
+                flagLevel_ = 0;                 // 進行度をリセット
+                progressTimer_ = 0;             // 進行タイマーをリセット
+
                 return;
             }
         }
@@ -132,7 +136,7 @@ void PC::Update()
     if (flag_&&IsMinigameActive()) {
 
         progressTimer_++;
-        if (progressTimer_ > 180) {
+        if (progressTimer_ > 240) {
             if (flagLevel_ < maxLevel_)
                 flagLevel_++;
             progressTimer_ = 0;
@@ -216,7 +220,7 @@ void PC::SetInfoText(const std::string& text)
 
 void PC::ChangeImage()
 {
-    img_ = LoadGraph((Application::PATH_ITEM + "pc_on.png").c_str());
+    //img_ = LoadGraph((Application::PATH_ITEM + "pc_on.png").c_str());
 }
 
 VECTOR PC::GetTargetPos() const

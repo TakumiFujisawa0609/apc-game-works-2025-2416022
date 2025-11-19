@@ -204,6 +204,13 @@ void SceneGame::Draw(void)
 		pc_->DrawAchievementWindow();
 	}
 
+	if (tv_ && tv_->IsGamePlaying() && tv_->GetMinigame())
+	{
+		// ‘¼‚Ì—v‘f‚Ìã‚É•`‰æ‚·‚é‚½‚ßATV‚ÌDraw()ŒÄ‚Ño‚µŒã‚É”z’u‚·‚é
+		// ƒ~ƒjƒQ[ƒ€‚Ì‹¤’Ê•`‰æ (”wŒiA˜g) ‚Æ“ÆŽ©‚ÌƒQ[ƒ€“à—e‚ª•`‰æ‚³‚ê‚é
+		tv_->GetMinigame()->Draw();
+	}
+
 
 	if (isGameOver_)
 	{
