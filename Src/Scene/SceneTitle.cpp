@@ -4,6 +4,7 @@
 
 #include"../Manager/Generic/SceneManager.h"
 #include"../Manager/Generic/InputManager.h"
+#include "../Audio/AudioManager.h"
 
 SceneTitle::SceneTitle(void)
 {
@@ -13,6 +14,9 @@ SceneTitle::SceneTitle(void)
 
 void SceneTitle::Init(void)
 {
+	AudioManager::GetInstance()->LoadSceneSound(LoadScene::TITLE);
+	AudioManager::GetInstance()->PlayBGM(SoundID::BGM_TITLE);
+
 	logo_ = LoadGraph((Application::PATH_IMAGE + "nc362712.png").c_str());
 	
 	GetGraphSize(logo_, &logoX_, &logoY_);

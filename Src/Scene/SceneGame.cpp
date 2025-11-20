@@ -66,6 +66,8 @@ void SceneGame::Init(void)
 	img4_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str());
 	img5_ = LoadGraph((Application::PATH_STAGE + "白円.png").c_str());
 	img6_ = LoadGraph((Application::PATH_ITEM + "NyanCat.png").c_str());
+	img7_ = LoadGraph((Application::PATH_ITEM + "画面4.png").c_str());
+	img8_ = LoadGraph((Application::PATH_ITEM + "nc304917.png").c_str());
 
 	for (int i = 0; i < 8; ++i) {
 		std::string filename = "ぬいぐるみ" + std::to_string(i + 1) + ".png"; // フレーム1から始まる場合
@@ -170,7 +172,7 @@ void SceneGame::Update(void)
 	}
 
 	// --- PC ゲームオーバー判定 ---
-	/*if (pc_->IsGameOver())
+	if (pc_->IsGameOver())
 	{
 		StartGameOver(GameOverSource::PC);
 		return;
@@ -181,7 +183,7 @@ void SceneGame::Update(void)
 	{
 		StartGameOver(GameOverSource::TV);
 		return;
-	}*/
+	}
 
 	// --- ゲームクリアタイマー ---
 	count_++;
@@ -283,8 +285,10 @@ void SceneGame::Draw(void)
 			//SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
 			// --- ゲームオーバー画像 ---
 			DrawRotaGraph(700,450,1.0, 0.0, img5_, true);
+			DrawRotaGraph(700, 450, 0.1, 0.0, img7_, true);
+			DrawRotaGraph(700, 450, 0.1, 0.0, img8_, true);
 			//SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-			//DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "テレビの放置は良くありません。ネコの管理もあなたの仕事です。", GetColor(255, 0, 0), fontHandle);
+			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "もう手遅れだ。", GetColor(255, 0, 0), fontHandle);
 		}
 	}
 
@@ -472,10 +476,10 @@ void SceneGame::DrawInfo()
 				infoText = "ニュース画面だ。天気予報のようだが、ここでは必要ない。";
 				break;
 			case 3:
-				infoText = "警報";
+				infoText = "首のない鶏が映っている。";
 				break;
 			case 4:
-				infoText = "緑のノイズが全画面を覆っている…。";
+				infoText = "……。";
 				break;
 			default: // level >= 5
 				break;

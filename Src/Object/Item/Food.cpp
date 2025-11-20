@@ -121,5 +121,5 @@ bool Food::GetIsMouseOver() const
 void Food::ChangeImage()
 {
 	// 新しい画像に切り替え
-    img_ = LoadGraph((Application::PATH_ITEM + "food_empty.png").c_str());
+    //img_ = LoadGraph((Application::PATH_ITEM + "food_empty.png").c_str());
 }

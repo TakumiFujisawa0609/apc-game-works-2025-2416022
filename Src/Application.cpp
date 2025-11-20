@@ -7,6 +7,7 @@
 #include "Manager/Generic/InputManager.h"
 #include "Manager/Generic/SceneManager.h"
 #include "Fps/FpsControll.h"
+#include "Audio/AudioManager.h"
 
 
 Application* Application::instance_ = nullptr;
@@ -73,6 +74,10 @@ void Application::Init(void)
 	// キー制御初期化
 	SetUseDirectInputFlag(true);
 	InputManager::CreateInstance();
+
+	// サウンド
+	AudioManager::CreateInstance();
+	AudioManager::GetInstance()->Init();
 
 	// シーン管理初期化
 	SceneManager::CreateInstance();
@@ -143,6 +148,10 @@ void Application::Destroy(void)
 {
 	InputManager::GetInstance().Destroy();
 	SceneManager::GetInstance().Destroy();
+
+	// サウンド削除
+	AudioManager::GetInstance()->DeleteAll();
+	AudioManager::DeleteInstance();
 
 
 	//DXLibの終了

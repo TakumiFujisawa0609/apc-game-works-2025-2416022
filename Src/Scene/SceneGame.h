@@ -55,8 +55,6 @@ public:
 
 private:
 
-	
-
 	int currentAnimationFrame_;
 
 	//描画(デバッグ)
@@ -84,6 +82,8 @@ private:
 	int img4_;
 	int img5_;
 	int img6_;
+	int img7_;
+	int img8_;
 
 	int count_;
 	bool isEnd_;
