@@ -51,6 +51,8 @@ void SceneTitle::Update(void)
 	if (isHit && InputManager::GetInstance().IsTrgMouseLeft())
 	{
 
+		AudioManager::GetInstance()->PlaySE(SoundID::SE_CLICK);
+
 		//ƒV[ƒ“‘JˆÚ
 		SceneManager::GetInstance().ChangeScene(SceneManager::SCENE_ID::GAME);
 
@@ -92,6 +94,10 @@ void SceneTitle::Draw(void)
 void SceneTitle::Release(void)
 {
 	DeleteGraph(logo_);
+
+	AudioManager::GetInstance()->StopBGM();
+	AudioManager::GetInstance()->DeleteSceneSound(LoadScene::TITLE);
+
 }
 
 void SceneTitle::DrawDebug(void)

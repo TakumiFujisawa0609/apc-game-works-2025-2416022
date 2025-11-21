@@ -51,6 +51,17 @@ void AudioManager::LoadSceneSound(LoadScene scene)
 	{
 		// サウンドを読み込む
 		handles_[id] = LoadSoundMem(path.c_str());
+
+		/*// デバッグ出力
+		if (handle == -1)
+		{
+			//printfDx("Failed to load sound: %s\n", path.c_str());
+		}
+		else
+		{
+			//printfDx("Loaded sound: %s (handle: %d)\n", path.c_str(), handle);
+			handles_[id] = handle;
+		}*/
 	}
 }
 

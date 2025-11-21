@@ -14,6 +14,7 @@
 #include "../Common/Easing.h"
 #include "../Manager/Generic/SceneManager.h"
 #include "../Manager/Generic/InputManager.h"
+#include "../Audio/AudioManager.h"
 
 SceneGame::SceneGame(void)
 {
@@ -79,6 +80,8 @@ void SceneGame::Init(void)
 	}
 	currentAnimationFrame_ = 0;
 
+	AudioManager::GetInstance()->LoadSceneSound(LoadScene::GAME);
+	AudioManager::GetInstance()->PlayBGM(SoundID::BGM_GAME);
 
 	fontHandle=CreateFontToHandle(NULL, 18, 9,-1);
 }

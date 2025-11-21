@@ -12,6 +12,7 @@ enum class SoundID
 
 	SE_TITLE,
 	SE_CLICK,
+	SE_EAT,
 
 	SE_NEKO,
 
@@ -33,6 +34,12 @@ enum class SoundID
 	SE_WALL_EYE,
 	SE_WALL_GAMEOVER,
 	SE_WALL_CLEAR,
+
+	SE_TOY_FALL,
+	SE_TOY_BOOT,
+	SE_TOY_MOVE,
+	SE_TOY_GAMEOVER,
+	SE_TOY_CLEAR,
 
 };
 
