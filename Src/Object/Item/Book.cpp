@@ -24,14 +24,14 @@ void Book::Init()
     spawnTimer_ = 900 + rand() % 301;
 
     // 画像ロード
-    img_ = LoadGraph((Application::PATH_ITEM + "book_base.png").c_str());
-    imgA_ = LoadGraph((Application::PATH_ITEM + "book_level1.png").c_str());
-    imgB1_ = LoadGraph((Application::PATH_ITEM + "book_level2.png").c_str());
-    imgB2_ = LoadGraph((Application::PATH_ITEM + "book_level2.png").c_str());
-    imgB3_ = LoadGraph((Application::PATH_ITEM + "book_level2.png").c_str());
-    imgB4_ = LoadGraph((Application::PATH_ITEM + "book_level2.png").c_str());
-    imgB5_ = LoadGraph((Application::PATH_ITEM + "book_level2.png").c_str());
-    imgB6_ = LoadGraph((Application::PATH_ITEM + "book_level2.png").c_str());
+    img_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    imgA_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    imgB1_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    imgB2_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    imgB3_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    imgB4_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    imgB5_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    imgB6_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
 
     // 位置設定
     pos_ = { 300, 450 };
@@ -112,7 +112,7 @@ void Book::Draw(void)
         drawImg = imgB6_;
     }
 
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, drawImg, true);
+    DrawRotaGraph(pos_.x, pos_.y, 1.0, 0.0, drawImg, true);
 
     if (isMouseOver_) {
         DrawBox(pos_.x - BOOK_WID / 2.0f, pos_.y - BOOK_HIG / 2.0f,
