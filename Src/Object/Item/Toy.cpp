@@ -1,5 +1,5 @@
 ﻿#include "Toy.h"
-#include "Food.h"  // Foodクラスのヘッダーをインクルード
+#include "Food.h"
 #include "../../Application.h"
 #include "../../Manager/Generic/InputManager.h"
 #include "../../Manager/Generic/SceneManager.h"

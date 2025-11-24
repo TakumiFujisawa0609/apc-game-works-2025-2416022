@@ -53,5 +53,5 @@ private:
 	// VECTOR nekoPos_;
 
 	// TV個別の再出現タイマー定数
-	const int spawnTimerBase_ = 180; // ItemBaseのspawnInterval_の初期値に使用
+	const int spawnTimerBase_ = 900; // ItemBaseのspawnInterval_の初期値に使用
 };

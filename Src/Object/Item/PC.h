@@ -38,6 +38,12 @@ private:
     // ItemBaseに img_, img2_ はある
     int img3_; // NyanCat画像
 
+    int imgA_;
+    int imgB_;
+    int imgC_;
+    int imgD_;
+    int imgE_;
+
     bool flagImg_; // 実績ウィンドウ表示フラグ
     int infoImg_; // 実績ウィンドウ背景画像
 

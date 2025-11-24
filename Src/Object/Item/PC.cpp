@@ -11,7 +11,7 @@ PC::PC()
     img3_(0), infoImg_(0)
 {
     // ItemBaseのメンバーをPCに合わせて初期化
-    spawnInterval_ = 300;
+    spawnInterval_ = 900;
 
     // ミニゲームインスタンスの生成
     pcMinigame_ = new PCMinigame();
@@ -38,6 +38,11 @@ void PC::Init()
     img_ = LoadGraph((Application::PATH_ITEM + "nc215732.png").c_str()); // PC本体
     img2_ = LoadGraph((Application::PATH_ITEM + "nc316039.png").c_str()); // PC画面
     img3_ = LoadGraph((Application::PATH_ITEM + "NyanCat.png").c_str()); // 実績画像
+    imgA_ = LoadGraph((Application::PATH_ITEM + ".png").c_str());
+    imgB_ = LoadGraph((Application::PATH_ITEM + ".png").c_str());
+    imgC_ = LoadGraph((Application::PATH_ITEM + ".png").c_str());
+    imgD_ = LoadGraph((Application::PATH_ITEM + ".png").c_str());
+    imgE_ = LoadGraph((Application::PATH_ITEM + ".png").c_str());
     infoImg_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str()); // 実績背景
     infoText_ = "実績情報なし";
 
@@ -46,11 +51,7 @@ void PC::Init()
     cancelPos_ = { 0, 0 };
     cancelW_ = cancelH_ = 0;
 
-    if (pcMinigame_) {
-        pcMinigame_->Init();
-    }
-
-    spawnTimer_ = rand() % spawnInterval_;
+    spawnTimer_ = spawnInterval_ + rand() % 301;
 }
 
 void PC::Update()
@@ -60,11 +61,11 @@ void PC::Update()
 
     // --- ランダムでアクティブに ---
     // 実績ウィンドウが開いていない & アクティブでない & ミニゲーム中でない場合
-    if (!flagImg_ && !isGamePlaying_ && !flag_) { // isGamePlaying_のチェックを追加
+    if (!flagImg_ && !flag_) {
         spawnTimer_--;
         if (spawnTimer_ <= 0) {
             flag_ = true;
-            spawnTimer_ = spawnInterval_ + rand() % spawnInterval_;
+            spawnTimer_ = spawnInterval_ + rand() % 301;
         }
     }
 
@@ -133,10 +134,10 @@ void PC::Update()
 
 
     // --- 4. PCがアクティブならネコが接近 (異常進行) ---
-    if (flag_&&IsMinigameActive()) {
+    if (flag_) {
 
         progressTimer_++;
-        if (progressTimer_ > 240) {
+        if (progressTimer_ > 300) {
             if (flagLevel_ < maxLevel_)
                 flagLevel_++;
             progressTimer_ = 0;
@@ -155,6 +156,28 @@ void PC::Draw(void)
     // 通常のPCアイコン描画
     DrawRotaGraph(pos_.x, pos_.y, 0.05, 0.0, img_, true);
     DrawRotaGraph(pos_.x - 100, pos_.y + 150, 0.1, 0.0, img2_, true);
+
+    // flagLevelに応じて描画
+    int drawImg = 0;
+    if (flag_ && flagLevel_ >= 5) {
+        drawImg = imgE_;
+    }
+    else if (flag_ && flagLevel_ == 4) {
+        drawImg = imgD_;
+    }
+    else if (flag_ && flagLevel_ == 3) {
+        drawImg = imgC_;
+    }
+    else if (flag_ && flagLevel_ == 2) {
+        drawImg = imgB_;
+    }
+    else if (flag_ && flagLevel_ == 1) {
+        drawImg = imgA_;
+    }
+
+    if (drawImg != 0) {
+        DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, drawImg, true);
+    }
 
     if (isGamePlaying_ && pcMinigame_) {
         pcMinigame_->Draw();

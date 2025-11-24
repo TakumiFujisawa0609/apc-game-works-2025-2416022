@@ -79,8 +79,8 @@ void Wall::Update()
 
             // 再表示ごとに加速
             spawnSpeedMultiplier_ *= 2.0f; // img2_ 出現間隔を短縮
-            spawnTimerMultiplier_ *= 2.0f; // img_ 再表示までの時間短縮
-            img2StartMultiplier_ *= 2.0f;  // img2_ 出現開始までの時間短縮
+            spawnTimerMultiplier_ *= 1.5f; // img_ 再表示までの時間短縮
+            img2StartMultiplier_ *= 1.5f;  // img2_ 出現開始までの時間短縮
 
             count_ = 0;
             return;

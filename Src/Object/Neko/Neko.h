@@ -4,6 +4,7 @@
 #include "../../Object/Item/Wall.h"
 #include "../../Object/Item/PC.h"
 #include "../../Object/Item/TV.h"
+#include "../../Object/Item/Book.h"
 
 #include <DxLib.h>
 
@@ -11,6 +12,7 @@ class Food;
 class PC;
 class TV;
 class Wall;
+class Book;
 
 class Neko
 {
@@ -28,6 +30,7 @@ public:
 		EAT,
 		PC,
 		TV,
+		BOOK,
 		ACT,
 		GAMEOVER,
 		END,
@@ -39,7 +42,8 @@ public:
 		NONE,
 		FOOD,
 		PC,
-		TV
+		TV,
+		BOOK,
 	};
 
 	//コンストラクタ
@@ -66,6 +70,8 @@ public:
 
 	void SetTV(TV* tv);
 
+	void SetBook(Book* book);
+
 	void SelectTarget();
 
 	bool GetIsMouseOver() const;
@@ -74,7 +80,12 @@ public:
 
 private:
 
+	float hunger_ = 0.0f;
 
+	static constexpr float MAX_HUNGER = 100.0f; // 満腹度最大値
+	static constexpr float HUNGER_DECREASE_MOVE = 0.1f; // 移動中の減少量/フレーム
+	static constexpr float HUNGER_RECOVER_EAT = 20.0f; // 摂食中の回復量/フレーム
+	static constexpr float MOVE_THRESHOLD = 1.0f; // 移動を許可する最低限の空腹度
 
 	// 状態
 	STATE state_;
@@ -116,6 +127,7 @@ private:
 	virtual void ChangeEat(void);
 	virtual void ChangePC(void);
 	virtual void ChangeTV(void);
+	virtual void ChangeBook(void);
 	virtual void ChangeAct(void);
 	virtual void ChangeGameover(void);
 	virtual void ChangeEnd(void);
@@ -126,6 +138,7 @@ private:
 	virtual void UpdateEat(void);
 	virtual void UpdatePC(void);
 	virtual void UpdateTV(void);
+	virtual void UpdateBook(void);
 	virtual void UpdateAct(void);
 	virtual void UpdateGameover(void);
 	virtual void UpdateEnd(void);
@@ -136,6 +149,7 @@ private:
 	virtual void DrawEat(void);
 	virtual void DrawPC(void);
 	virtual void DrawTV(void);
+	virtual void DrawBook(void);
 	virtual void DrawAct(void);
 	virtual void DrawGameover(void);
 	virtual void DrawEnd(void);
@@ -151,5 +165,7 @@ private:
 	TV* tv_ = nullptr;
 
 	Wall* wall_ = nullptr;
+
+	Book* book_ = nullptr;
 };
 

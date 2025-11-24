@@ -9,6 +9,7 @@
 #include "../Object/Item/Toy.h"
 #include "../Object/Item/PC.h"
 #include "../Object/Item/TV.h"
+#include "../Object/Item/Book.h"
 
 #include "../Object/Message.h"
 #include "../Common/Easing.h"
@@ -25,6 +26,7 @@ SceneGame::SceneGame(void)
 	toy_ = nullptr;
 	pc_ = nullptr;
 	tv_ = nullptr;
+	book_ = nullptr;
 
 	message_ = nullptr;
 	isEnd_ = false;
@@ -53,6 +55,9 @@ void SceneGame::Init(void)
 	tv_ = new TV();
 	tv_->Init();
 
+	book_ = new Book();
+	book_->Init();
+
 	message_ = new Message();
 	message_->Init();
 
@@ -62,6 +67,7 @@ void SceneGame::Init(void)
 	neko_->SetFood(food_);
 	neko_->SetPC(pc_);
 	neko_->SetTV(tv_);
+	neko_->SetBook(book_);
 
 	img3_ = LoadGraph((Application::PATH_ITEM + "nc296608.png").c_str());
 	img4_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str());
@@ -111,6 +117,8 @@ void SceneGame::Update(void)
 		case GameOverSource::TV:
 			tv_->Update();
 			break;
+		case GameOverSource::Book:
+			book_->Update();
 		default:
 			break;
 		}
@@ -147,6 +155,7 @@ void SceneGame::Update(void)
 	toy_->Update(food_);
 	pc_->Update();
 	tv_->Update();
+	book_->Update();
 
 	tv_->SetNekoPos(neko_->GetPos());
 	pc_->SetNekoPos(neko_->GetPos());
@@ -188,9 +197,16 @@ void SceneGame::Update(void)
 		return;
 	}
 
+	// Book
+	if (book_->IsGameOver())
+	{
+		StartGameOver(GameOverSource::Book);
+		return;
+	}
+
 	// --- ゲームクリアタイマー ---
 	count_++;
-	if (count_ >= 3200)
+	if (count_ >= 7200)
 	{
 		SceneManager::GetInstance().ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
 		return;
@@ -209,6 +225,7 @@ void SceneGame::Draw(void)
 	toy_->Draw();
 	pc_->Draw();
 	tv_->Draw();
+	book_->Draw();
 
 	message_->Draw();
 
@@ -234,11 +251,11 @@ void SceneGame::Draw(void)
 			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
 				Application::SCREEN_SIZE_Y / 2,
 				1.0, 0.0, img4_, true);
-			
 
-			DrawRotaGraph(300,600,0.7, 0.0, img5_, true);
 
-			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "食べ過ぎには注意しましょう。ネコの管理もあなたの仕事です。", GetColor(255, 0, 0),fontHandle);
+			DrawRotaGraph(300, 600, 0.7, 0.0, img5_, true);
+
+			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "食べ過ぎには注意しましょう。ネコの管理もあなたの仕事です。", GetColor(255, 0, 0), fontHandle);
 		}
 		else if (gameOverSource_ == GameOverSource::WALL)
 		{
@@ -247,26 +264,60 @@ void SceneGame::Draw(void)
 				1.0, 0.0, img4_, true);
 
 			// --- ゲームオーバー画像 ---
-		DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
-			Application::SCREEN_SIZE_Y / 2,
-			1.0, 0.0, img3_, true);
-		
-			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "壁の穴を放置してはいけません。修繕費用はあなた持ちです。", GetColor(255, 0, 0),fontHandle);
+			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0, 0.0, img3_, true);
+
+			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "壁の穴を放置してはいけません。修繕費用はあなた持ちです。", GetColor(255, 0, 0), fontHandle);
 		}
 		else if (gameOverSource_ == GameOverSource::TOY)
 		{
 			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
 				Application::SCREEN_SIZE_Y / 2,
 				1.0, 0.0, img4_, true);
-			// --- ゲームオーバー画像 ---
-			DrawRotaGraph(300,600,1.0, 0.0, img5_, true);
-			int currentFrame = gameOverTimer_ / (GAMEOVER_WAIT_ / 8);
-			if (currentFrame >= 8)
+			DrawRotaGraph(300, 600, 1.0, 0.0, img5_, true);
+
+			// アニメーションを1秒（60フレーム）で完結させる
+			const int ANIMATION_DURATION = 60; // 1秒 = 60フレーム
+			const int NUM_FRAMES = 4;
+			// 1フレームあたりの表示時間 (60フレーム / 8フレーム = 7.5フレーム/枚)
+			int framePerImage = ANIMATION_DURATION / NUM_FRAMES;
+			// 現在のフレームを計算 (0から7)
+			int currentFrame = gameOverTimer_ / framePerImage;
+			// フレームが総フレーム数を超えないように制限
+			if (currentFrame >= NUM_FRAMES)
 			{
-				currentFrame = 8 - 1; // 最後のフレームで固定
+				currentFrame = NUM_FRAMES - 1; // 最後のフレーム（7）で固定
 			}
 			// アニメーションフレームを描画
-			DrawRotaGraph(300,600,0.1, 0.0, toyAnimationHandles_[currentFrame], true);
+			DrawRotaGraph(300, 600, 0.1, 0.0, toyAnimationHandles_[currentFrame], true);
+
+			const int GAMEOVER_WAIT_ASSUMED = 180; // 仮の値
+			const int STOP_BLINK_TIME = GAMEOVER_WAIT_ASSUMED - 60; // 120フレーム
+
+			// --- 1. 点滅処理 (STOP_BLINK_TIME 未満の場合のみ実行) ---
+			if (gameOverTimer_ < STOP_BLINK_TIME) // 120フレームまで点滅
+			{
+				const int BLINK_SPEED = 5;
+				int blinkState = (gameOverTimer_ / BLINK_SPEED) % 2;
+
+				if (blinkState == 1)
+				{
+					const int BLACK_COLOR = GetColor(0, 0, 0);
+					DrawBox(0, 0, Application::SCREEN_SIZE_X, Application::SCREEN_SIZE_Y, BLACK_COLOR, TRUE);
+				}
+			}
+
+
+			// --- 2. 残り1秒（STOP_BLINK_TIME 以降）の画像描画 ---
+			if (gameOverTimer_ >= STOP_BLINK_TIME) // 120フレーム以降に追加画像を描画
+			{
+				DrawRotaGraph(
+					Application::SCREEN_SIZE_X / 2,
+					Application::SCREEN_SIZE_Y / 2,
+					4.0, 0.0, toyAnimationHandles_[7], true);
+			}
+
 			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "おもちゃを放置してはいけません。特に上から落ちてくるようなおもちゃを。", GetColor(255, 0, 0), fontHandle);
 		}
 		else if (gameOverSource_ == GameOverSource::PC)
@@ -287,18 +338,24 @@ void SceneGame::Draw(void)
 				1.0, 0.0, img4_, true);
 			//SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
 			// --- ゲームオーバー画像 ---
-			DrawRotaGraph(700,450,1.0, 0.0, img5_, true);
+			DrawRotaGraph(700, 450, 1.0, 0.0, img5_, true);
 			DrawRotaGraph(700, 450, 0.1, 0.0, img7_, true);
 			DrawRotaGraph(700, 450, 0.1, 0.0, img8_, true);
 			//SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "もう手遅れだ。", GetColor(255, 0, 0), fontHandle);
 		}
-	}
+		else if (gameOverSource_ == GameOverSource::Book)
+		{
+			DrawRotaGraph(Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0, 0.0, img4_, true);
+			DrawRotaGraph(300, 450, 1.0, 0.0, img5_, true);
 
-#ifdef _DEBUG
-	DrawDebug();
-#endif // _DEBUG
+			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "本棚の整理を怠ってはいけません。部屋の管理があなたの仕事です。", GetColor(255, 0, 0), fontHandle);
+		}
+	}
 }
+
 
 void SceneGame::Release(void)
 {
@@ -356,6 +413,13 @@ void SceneGame::Release(void)
 		tv_ = nullptr;
 	}
 
+	if (book_)
+	{
+		book_->Release();
+		delete book_;
+		book_ = nullptr;
+	}
+
 	if (message_)
 	{
 		message_->Release();
@@ -402,6 +466,9 @@ void SceneGame::StartGameOver(GameOverSource source)
 		case GameOverSource::TV:
 			// テレビ放置 → 「ネコが退屈している」画像を出すとか
 			// PlaySoundMem(tvAlertSE, DX_PLAYTYPE_BACK);
+			break;
+
+		case GameOverSource::Book:
 			break;
 
 		default:
@@ -479,7 +546,7 @@ void SceneGame::DrawInfo()
 				infoText = "ニュース画面だ。天気予報のようだが、ここでは必要ない。";
 				break;
 			case 3:
-				infoText = "首のない鶏が映っている。";
+				infoText = "首のない鶏が映っている。この鶏はこの状態で18ヶ月間生きたそうだ。";
 				break;
 			case 4:
 				infoText = "……。";
@@ -488,6 +555,14 @@ void SceneGame::DrawInfo()
 				break;
 			}
 		}
+	}
+
+	else if (book_->GetIsMouseOver())
+	{
+		if (book_->GetTargetImg())
+			infoText = "良く整理された本棚だ。";
+		else
+			infoText = "本棚が整理されていない。ネコが来るまでに本棚を整理しておこう。";
 	}
 
 	else if (neko_->GetIsMouseOver())

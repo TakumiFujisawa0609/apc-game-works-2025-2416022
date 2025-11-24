@@ -25,7 +25,7 @@ void TV::Init(void)
     flag_ = false;
     isMouseOver_ = false;
     isGameOver_ = false;
-    spawnTimer_ = rand() % spawnTimerBase_; // ランダム初期化
+    spawnTimer_ = 900 + rand() % 601; // ランダム初期化
     flagLevel_ = 0;
     progressTimer_ = 0;
 
@@ -50,9 +50,12 @@ void TV::Update(void)
     // --- 再出現処理 ---
     if (!flag_)
     {
-        // ItemBaseの関数で処理
-        handleSpawning(spawnTimerBase_);
-        if (!flag_) return; // 表示されていないときはこれ以上進まない
+        spawnTimer_--;
+        if (spawnTimer_ <= 0) {
+            flag_ = true;
+            spawnTimer_ = 900 + rand() % 601;
+            if (!flag_) return; // 表示されていないときはこれ以上進まない
+        }
     }
 
     if (IsMinigameActive() && tvMinigame_) // ネコ到達 = ミニゲーム準備完了
@@ -97,7 +100,7 @@ void TV::Update(void)
 
     if (flag_/* && IsMinigameActive()*/ ) {
         progressTimer_++;
-        if (progressTimer_ > 180) { // 3秒(180f)で1段階進行 (PCと同じ)
+        if (progressTimer_ > 300) { // 段階進行
             if (flagLevel_ < maxLevel_)
                 flagLevel_++;
             progressTimer_ = 0;

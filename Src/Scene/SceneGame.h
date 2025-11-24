@@ -12,6 +12,7 @@ class Wall;
 class Toy;
 class PC;
 class TV;
+class Book;
 
 class Message;
 
@@ -29,6 +30,7 @@ public:
 		TOY,
 		PC,
 		TV,
+		Book,
 	} gameOverSource_ = GameOverSource::NONE; // ★どこでゲームオーバーになったかを記録
 
 	//コンストラクタ
@@ -74,6 +76,8 @@ private:
 
 	TV* tv_;
 
+	Book* book_;
+
 	Message* message_;
 
 	int fontHandle;
@@ -90,9 +94,7 @@ private:
 
 	bool isGameOver_ = false;
 	int gameOverTimer_ = 0;
-	const int GAMEOVER_WAIT_ = 120; // 約2秒待機
-
-	
+	const int GAMEOVER_WAIT_ = 180; // 約3秒待機
 
 };
 

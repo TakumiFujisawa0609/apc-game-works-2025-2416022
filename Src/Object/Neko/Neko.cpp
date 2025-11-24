@@ -29,6 +29,8 @@ void Neko::Init(void)
     targetType_ = TARGET::NONE;
     targetTimer_ = 0;
 
+    hunger_ = MAX_HUNGER;
+
     ChangeState(STATE::STANDBY);
 }
 
@@ -78,6 +80,9 @@ void Neko::Update()
     case STATE::TV:
         UpdateTV();
         break;
+    case STATE::BOOK:
+        UpdateBook();
+        break;
     case STATE::ACT:
         UpdateAct();
         break;
@@ -116,6 +121,9 @@ void Neko::Draw(void)
     case Neko::STATE::TV:
         DrawTV();
         break;
+    case Neko::STATE::BOOK:
+        DrawBook();
+        break;
     case Neko::STATE::ACT:
         DrawAct();
         break;
@@ -150,6 +158,11 @@ void Neko::SetTV(TV* tv)
     tv_ = tv;
 }
 
+void Neko::SetBook(Book* book)
+{
+    book_ = book;
+}
+
 bool Neko::ShouldSwitchTarget()
 {
     // Foodが最優先
@@ -160,6 +173,7 @@ bool Neko::ShouldSwitchTarget()
     // クールダウンチェック
     bool isPCCoolDown = (lastTargetType_ == TARGET::PC && targetCoolDown_ > 0);
     bool isTVCoolDown = (lastTargetType_ == TARGET::TV && targetCoolDown_ > 0);
+    bool isBookCoolDown = (lastTargetType_ == TARGET::BOOK && targetCoolDown_ > 0);
 
     // PCが現在のターゲットであり、TVが有効でクールダウン中でないなら、切り替えを許可
     if (targetType_ == TARGET::PC && tv_ && tv_->GetFlag() && !isTVCoolDown) {
@@ -171,6 +185,11 @@ bool Neko::ShouldSwitchTarget()
         return true;
     }
 
+    // Bookが現在のターゲットであり、Bookが有効でクールダウン中でないなら、切り替えを許可
+    if (targetType_ == TARGET::BOOK && book_ && book_->GetFlag() && !isBookCoolDown) {
+        return true;
+    }
+
     return false;
 }
 
@@ -179,13 +198,16 @@ void Neko::SelectTarget()
     bool foodValid = (food_ && food_->GetFlag());
     bool pcFlagValid = (pc_ && pc_->GetFlag());
     bool tvFlagValid = (tv_ && tv_->GetFlag());
+    bool bookFlagValid = (book_ && book_->GetFlag());
 
     // クールダウンチェックをターゲット選択に追加
     bool isPCCoolDown = (lastTargetType_ == TARGET::PC && targetCoolDown_ > 0);
     bool isTVCoolDown = (lastTargetType_ == TARGET::TV && targetCoolDown_ > 0);
+    bool isBookCoolDown = (lastTargetType_ == TARGET::BOOK && targetCoolDown_ > 0);
 
     bool pcValid = pcFlagValid && !isPCCoolDown; // クールダウン中は無効
     bool tvValid = tvFlagValid && !isTVCoolDown; // クールダウン中は無効
+    bool bookValid = bookFlagValid && !isBookCoolDown; // クールダウン中は無効
 
     // すでにターゲットがある場合の上書きルール
     if (targetType_ != TARGET::NONE)
@@ -217,7 +239,8 @@ void Neko::SelectTarget()
         else if (
             (targetType_ == TARGET::FOOD && !foodValid) ||
             (targetType_ == TARGET::PC && !pcValid) || // pcValid を使用
-            (targetType_ == TARGET::TV && !tvValid))   // tvValid を使用
+            (targetType_ == TARGET::TV && !tvValid)||   // tvValid を使用
+            (targetType_ == TARGET::BOOK && !bookValid))   // bookValid を使用
         {
             targetType_ = TARGET::NONE;
             SelectTarget(); // 再帰的に再選択
@@ -243,11 +266,19 @@ void Neko::SelectTarget()
             // PC滞在後: TVを優先してチェック
             if (tvValid) { nextTarget = TARGET::TV; }
             else if (pcValid) { nextTarget = TARGET::PC; }
+            else if (bookValid) { nextTarget = TARGET::BOOK; }
         }
         else if (lastTargetType_ == TARGET::TV)
         {
             // TV滞在後: PCを優先してチェック
             if (pcValid) { nextTarget = TARGET::PC; }
+            else if (tvValid) { nextTarget = TARGET::TV; }
+            else if (bookValid) { nextTarget = TARGET::BOOK; }
+        }
+        else if (lastTargetType_ == TARGET::BOOK)
+        {
+            if (bookValid) { nextTarget = TARGET::BOOK; }
+            else if (pcValid) { nextTarget = TARGET::PC; }
             else if (tvValid) { nextTarget = TARGET::TV; }
         }
         else // lastTargetType_ が NONE, FOOD, または初期状態の場合（デフォルトの優先順位）
@@ -255,6 +286,7 @@ void Neko::SelectTarget()
             // デフォルト: PCを優先してチェック
             if (pcValid) { nextTarget = TARGET::PC; }
             else if (tvValid) { nextTarget = TARGET::TV; }
+            else if (bookValid) { nextTarget = TARGET::BOOK; }
         }
 
         if (nextTarget == TARGET::PC)
@@ -266,6 +298,11 @@ void Neko::SelectTarget()
         {
             targetType_ = TARGET::TV;
             ChangeState(STATE::TV);
+        }
+        else if (nextTarget == TARGET::BOOK)
+        {
+            targetType_ = TARGET::BOOK;
+            ChangeState(STATE::BOOK);
         }
         else
         {
@@ -335,12 +372,33 @@ void Neko::Move(void)
 
 void Neko::MoveToTarget(VECTOR targetPos, bool targetFlag)
 {
+
+    const float ARRIVAL_DISTANCE = 2.0f;
+
+    bool isFoodTarget = (targetType_ == TARGET::FOOD);
+    bool canMove = isFoodTarget || (hunger_ >= MOVE_THRESHOLD);
+
     float dx = targetPos.x - pos_.x;
     float dy = targetPos.y - pos_.y;
     float len = sqrtf(dx * dx + dy * dy);
 
+    // 空腹度減少 (移動が許可され、かつ実際に動いている場合)
+    if (canMove && len > ARRIVAL_DISTANCE) {
+        // Foodターゲットへの移動時は減少をスキップするか、速度を落とす
+        if (!isFoodTarget) {
+            hunger_ -= HUNGER_DECREASE_MOVE;
+            if (hunger_ < 0.0f) hunger_ = 0.0f;
+        }
+    }
+
+    // 空腹度が足りない場合は、Foodターゲットでない限りここで処理終了（静止）
+    if (!canMove && !isFoodTarget) {
+        isMoving_ = false;
+        return;
+    }
+
     // 到達判定
-    const float ARRIVAL_DISTANCE = 2.0f;
+    
     if (len < ARRIVAL_DISTANCE) {
         OnArriveTarget();  // 到達時の処理
         return;
@@ -404,6 +462,18 @@ void Neko::OnArriveTarget()
             // ターゲットは維持したまま（STATE::TVのまま）
         }
         break;
+
+    case TARGET::BOOK:
+        if (book_) {
+            //book_->ChangeImage();
+            targetPos = book_->GetTargetPos();
+            book_->SetMinigameActive(true);  // ミニゲーム有効化
+            pos_ = targetPos;
+
+            // 到着後の待機タイマー設定（3秒）
+            targetTimer_ = 180;
+        }
+        break;
     }
 
     // 座標を固定
@@ -436,6 +506,9 @@ void Neko::ChangeState(STATE state)
         break;
     case Neko::STATE::TV:
         ChangeTV();
+        break;
+    case Neko::STATE::BOOK:
+        ChangeBook();
         break;
     case Neko::STATE::ACT:
         ChangeAct();
@@ -478,6 +551,13 @@ void Neko::ChangeTV(void)
     moveDirY_ = 0.0f;
 }
 
+void Neko::ChangeBook(void)
+{
+    isMoving_ = true;
+    moveDirX_ = 0.0f; // 移動方向はMoveToTargetで再計算される
+    moveDirY_ = 0.0f;
+}
+
 void Neko::ChangeAct(void)
 {
 }
@@ -502,7 +582,8 @@ void Neko::UpdateStandby(void)
     // 新しいターゲットが出現したら反応する
     if ((food_ && food_->GetFlag()) ||
         (pc_ && pc_->GetFlag()) ||
-        (tv_ && tv_->GetFlag()))
+        (tv_ && tv_->GetFlag())||
+        (book_ && book_->GetFlag()))
     {
         SelectTarget();
         return;
@@ -514,7 +595,8 @@ void Neko::UpdateMove()
     // ターゲットが存在すれば状態変更する
     if ((food_ && food_->GetFlag()) ||
         (pc_ && pc_->GetFlag()) ||
-        (tv_ && tv_->GetFlag()))
+        (tv_ && tv_->GetFlag()) ||
+        (book_&&book_->GetFlag()))
     {
         SelectTarget();
         return;
@@ -541,6 +623,13 @@ void Neko::UpdateEat()
     }
 
     MoveToTarget(food_->GetPos(), true);
+
+    if (isMoving_ == false) { // 到着後、静止状態の場合
+        hunger_ += HUNGER_RECOVER_EAT;
+        if (hunger_ > MAX_HUNGER) {
+            hunger_ = MAX_HUNGER;
+        }
+    }
 }
 
 void Neko::UpdatePC()
@@ -652,6 +741,47 @@ void Neko::UpdateTV()
     MoveToTarget(tv_->GetTargetPos(), true);
 }
 
+void Neko::UpdateBook(void)
+{
+    // ターゲットが無効になったら待機状態へ
+    if (!book_ || !book_->GetFlag())
+    {
+        targetTimer_ = 0;
+        targetType_ = TARGET::NONE;
+        ChangeState(STATE::STANDBY);
+        return;
+    }
+
+    // 待機中でもFoodは最優先で反応
+    if (food_ && food_->GetFlag() && targetType_ != TARGET::FOOD) {
+        targetTimer_ = 0;  // タイマーをリセット
+        SelectTarget();
+        return;
+    }
+
+    // 到着後の待機タイマー処理
+    if (targetTimer_ > 0)
+    {
+        targetTimer_--;
+        if (targetTimer_ <= 0)
+        {
+            // 待機時間終了: 次の行動へ
+            targetType_ = TARGET::NONE;
+            lastTargetType_ = TARGET::BOOK;
+            targetCoolDown_ = 120;
+            standbyTimer_ = 0;
+            ChangeState(STATE::STANDBY);
+            return;
+        }
+        // 待機中はその場に留まる
+        return;
+    }
+
+    // ターゲットへ移動
+    isMoving_ = true;
+    MoveToTarget(book_->GetTargetPos(), true);
+}
+
 void Neko::UpdateAct(void)
 {
 }
@@ -687,14 +817,18 @@ void Neko::DrawCommon()
 
     DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true, isReverse);
 
-    // デバッグ用: マウスオーバー時に枠を表示
+    // マウスオーバー時に枠を表示
     if (isMouseOver_) {
         DrawBox(
             pos_.x - NEKO_WID / 2, pos_.y - NEKO_HIG / 2,
             pos_.x + NEKO_WID / 2, pos_.y + NEKO_HIG / 2,
             GetColor(255, 0, 0), false
         );
+        DrawFormatString(pos_.x - 60, pos_.y + 65, GetColor(255, 255, 255),
+            "満腹度: %.1f%%", hunger_);
     }
+
+    
 }
 
 // ========================================
@@ -721,6 +855,11 @@ void Neko::DrawPC(void)
 }
 
 void Neko::DrawTV(void)
+{
+    DrawCommon();
+}
+
+void Neko::DrawBook(void)
 {
     DrawCommon();
 }
