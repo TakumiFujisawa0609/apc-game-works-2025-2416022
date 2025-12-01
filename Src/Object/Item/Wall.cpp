@@ -25,8 +25,8 @@ void Wall::Init(void)
 {
     srand((unsigned int)time(nullptr));
 
-    img_ = LoadGraph((Application::PATH_ITEM + "nc73263_穴.png").c_str());
-    img2_ = LoadGraph((Application::PATH_ITEM + "目.png").c_str());
+    img_ = LoadGraph((Application::PATH_ITEM + "wall.png").c_str());
+    img2_ = LoadGraph((Application::PATH_ITEM + "eye1.png").c_str());
     
     img4_ = LoadGraph((Application::PATH_ITEM + "nc407592.png").c_str());
 
@@ -144,7 +144,7 @@ void Wall::Draw(void)
     // --- img_ の描画 ---
     if (flagImg_)
     {
-        DrawRotaGraph(pos_.x+10, pos_.y+10, 0.3, 0.0, img_, true);
+        DrawRotaGraph(pos_.x-20, pos_.y-10, 0.3, 0.0, img_, true);
         
     }
 
@@ -154,7 +154,7 @@ void Wall::Draw(void)
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
         for (const auto& p : spawnPositions_)
         {
-            DrawRotaGraph((int)p.x, (int)p.y, 0.03, 0.0, img2_, true);
+            DrawRotaGraph((int)p.x, (int)p.y, 0.05, 0.0, img2_, true);
         }
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
     }

@@ -15,7 +15,7 @@ Neko::~Neko(void)
 
 void Neko::Init(void)
 {
-    img_ = LoadGraph((Application::PATH_MODEL + "Nekoproto.jpg").c_str());
+    img_ = LoadGraph((Application::PATH_MODEL + "nako_zentai.png").c_str());
 
     pos_.x = Application::SCREEN_SIZE_X / 2;
     pos_.y = Application::SCREEN_SIZE_Y / 2 + 100;
@@ -815,7 +815,7 @@ void Neko::DrawCommon()
         isReverse = false;
     }
 
-    DrawRotaGraph(pos_.x, pos_.y, 0.1, 0.0, img_, true, isReverse);
+    DrawRotaGraph(pos_.x, pos_.y, 0.5, 0.0, img_, true, isReverse);
 
     // マウスオーバー時に枠を表示
     if (isMouseOver_) {

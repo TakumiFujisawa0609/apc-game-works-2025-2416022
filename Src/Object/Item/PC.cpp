@@ -35,7 +35,7 @@ void PC::Init()
     progressTimer_ = 0;
 
     // 画像ロード (img_とimg2_はItemBaseのメンバー)
-    img_ = LoadGraph((Application::PATH_ITEM + "nc215732.png").c_str()); // PC本体
+    img_ = LoadGraph((Application::PATH_ITEM + "desk.png").c_str()); // PC本体
     img2_ = LoadGraph((Application::PATH_ITEM + "nc316039.png").c_str()); // PC画面
     img3_ = LoadGraph((Application::PATH_ITEM + "NyanCat.png").c_str()); // 実績画像
     imgA_ = LoadGraph((Application::PATH_ITEM + ".png").c_str());
@@ -46,7 +46,7 @@ void PC::Init()
     infoImg_ = LoadGraph((Application::PATH_STAGE + "黒背景.png").c_str()); // 実績背景
     infoText_ = "実績情報なし";
 
-    pos_ = { 85, 400 };
+    pos_ = { 85,500 };
     closePos_ = { 900, 700 };
     cancelPos_ = { 0, 0 };
     cancelW_ = cancelH_ = 0;
@@ -154,7 +154,7 @@ void PC::Update()
 void PC::Draw(void)
 {
     // 通常のPCアイコン描画
-    DrawRotaGraph(pos_.x, pos_.y, 0.05, 0.0, img_, true);
+    DrawRotaGraph(pos_.x, pos_.y, 2.0, 0.0, img_, true);
     DrawRotaGraph(pos_.x - 100, pos_.y + 150, 0.1, 0.0, img2_, true);
 
     // flagLevelに応じて描画
@@ -249,6 +249,6 @@ void PC::ChangeImage()
 VECTOR PC::GetTargetPos() const
 {
     VECTOR target = pos_;
-    target.y += 200; // ネコの立ち位置例
+    //target.y += 200; // ネコの立ち位置例
     return target;
 }

@@ -24,14 +24,12 @@ void Book::Init()
     spawnTimer_ = 900 + rand() % 301;
 
     // 画像ロード
-    img_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    img_ = LoadGraph((Application::PATH_ITEM + "Book1.png").c_str());
     imgA_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
-    imgB1_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
-    imgB2_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
-    imgB3_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
-    imgB4_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
-    imgB5_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
-    imgB6_ = LoadGraph((Application::PATH_ITEM + "Book.png").c_str());
+    imgB1_ = LoadGraph((Application::PATH_ITEM + "Book1.png").c_str());
+    imgB2_ = LoadGraph((Application::PATH_ITEM + "Book2.png").c_str());
+    imgB3_ = LoadGraph((Application::PATH_ITEM + "Book3.png").c_str());
+    imgB4_ = LoadGraph((Application::PATH_ITEM + "Book4.png").c_str());
 
     // 位置設定
     pos_ = { 300, 450 };
@@ -105,12 +103,6 @@ void Book::Draw(void)
     else if (currentImageId_ == 5) {
         drawImg = imgB4_;
     }
-    else if (currentImageId_ == 6) {
-        drawImg = imgB5_;
-    }
-    else if (currentImageId_ == 7) {
-        drawImg = imgB6_;
-    }
 
     DrawRotaGraph(pos_.x, pos_.y, 1.0, 0.0, drawImg, true);
 
@@ -135,8 +127,6 @@ void Book::Release()
     DeleteGraph(imgB2_);
     DeleteGraph(imgB3_);
     DeleteGraph(imgB4_);
-    DeleteGraph(imgB5_);
-    DeleteGraph(imgB6_);
 
     ItemBase::Release();
 }

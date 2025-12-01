@@ -18,7 +18,7 @@ Food::~Food(void)
 void Food::Init(void)
 {
     // 餌画像を読み込み
-    img_ = LoadGraph((Application::PATH_ITEM + "5721.png").c_str());
+    img_ = LoadGraph((Application::PATH_ITEM + "gohan.png").c_str());
     
     pos_.x = 300;
     pos_.y = 600;
@@ -73,7 +73,7 @@ void Food::Update()
 void Food::Draw(void)
 {
 
-    DrawRotaGraph(pos_.x, pos_.y, 0.03, 0.0, img_, true);
+    DrawRotaGraph(pos_.x, pos_.y, 1.0, 0.0, img_, true);
 
     float halfW = FOOD_WID / 2.0f;
     float halfH = FOOD_HIG / 2.0f;
