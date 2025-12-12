@@ -16,6 +16,9 @@ Neko::~Neko(void)
 void Neko::Init(void)
 {
     img_ = LoadGraph((Application::PATH_MODEL + "nako_zentai.png").c_str());
+	imgA_ = LoadGraph((Application::PATH_MODEL + "nako_zentai2.png").c_str());
+	imgB_ = LoadGraph((Application::PATH_MODEL + "nako_zentai3.png").c_str());
+	imgC_ = LoadGraph((Application::PATH_MODEL + "neko_suwari.png").c_str());
 
     pos_.x = Application::SCREEN_SIZE_X / 2;
     pos_.y = Application::SCREEN_SIZE_Y / 2 + 100;
@@ -44,6 +47,17 @@ void Neko::Update()
     isMouseOver_ =
         (mousePos.x >= pos_.x - halfW && mousePos.x <= pos_.x + halfW &&
             mousePos.y >= pos_.y - halfH && mousePos.y <= pos_.y + halfH);
+
+    frameCounter_++;
+
+    // 必要に応じてカウンターが大きくなりすぎないように制御（例：INT_MAX対策）
+    if (frameCounter_ > 60000) frameCounter_ = 0;
+
+    // 静止中にアニメーションを止めたい場合は、静止中にリセット
+    if (!isMoving_)
+    {
+        frameCounter_ = 0; // 静止画に固定
+    }
 
     // ネコ非表示でターゲットがあれば再表示
     if (!isVisible_ && ((food_ && food_->GetFlag()) || (pc_ && pc_->GetFlag()) || (tv_ && tv_->GetFlag())))
@@ -799,23 +813,40 @@ void Neko::UpdateEnd(void)
 // ========================================
 void Neko::DrawCommon()
 {
-    bool isReverse = false;
-    if (isMoving_) // 移動中のみ方向で判断
+    int img; // 描画する画像ハンドル
+
+    if (!isMoving_)
     {
-        if (moveDirX_ < 0) // 左向きの場合
+        img = imgC_;
+    }
+    else // 移動中の場合
+    {
+        // frameCounter_ を使って画像を切り替える
+        // 例: 8フレームごとに画像を切り替え
+        if ((frameCounter_ / 8) % 2 == 0)
         {
-            isReverse = true;
+            img = imgA_;
+        }
+        else
+        {
+            img = imgB_;
         }
     }
-    else // 静止中の場合
-    {
-        // 静止中のデフォルト向き（例: 右向き）
-        // または、最後に移動した方向を記憶する変数を使う
-        // 今回はデフォルトで右向き（反転なし）とする
-        isReverse = false;
-    }
 
-    DrawRotaGraph(pos_.x, pos_.y, 0.5, 0.0, img_, true, isReverse);
+        bool isReverse = false;
+        if (isMoving_) // 移動中のみ方向で判断
+        {
+            if (moveDirX_ < 0) // 左向きの場合
+            {
+                isReverse = true;
+            }
+        }
+        else // 静止中の場合
+        {
+            isReverse = false;
+        }
+
+    DrawRotaGraph(pos_.x, pos_.y, 0.5, 0.0, img, true, isReverse);
 
     // マウスオーバー時に枠を表示
     if (isMouseOver_) {
@@ -831,9 +862,6 @@ void Neko::DrawCommon()
     
 }
 
-// ========================================
-// 状態別描画処理（共通処理を呼ぶ）
-// ========================================
 void Neko::DrawStandby(void)
 {
     DrawCommon();

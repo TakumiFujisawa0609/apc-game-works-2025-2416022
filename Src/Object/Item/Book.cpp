@@ -32,7 +32,7 @@ void Book::Init()
     imgB4_ = LoadGraph((Application::PATH_ITEM + "Book4.png").c_str());
 
     // 位置設定
-    pos_ = { 300, 450 };
+    pos_ = { 300, 460 };
 
 }
 
@@ -134,6 +134,6 @@ void Book::Release()
 VECTOR Book::GetTargetPos() const
 {
     VECTOR target = pos_;
-    target.y += 50; // Bookの前にネコが座る位置
+    //target.y += 50; // Bookの前にネコが座る位置
     return target;
 }

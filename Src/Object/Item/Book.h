@@ -24,8 +24,8 @@ public:
 
 private:
     // Book“Á—L‚Ì’è”
-    static constexpr float BOOK_WID = 100.0f;
-    static constexpr float BOOK_HIG = 150.0f;
+    static constexpr float BOOK_WID = 128.0f;
+    static constexpr float BOOK_HIG = 128.0f;
 
     static constexpr int CHANGE_INTERVAL = 30; // ‰æ‘œ‚ğƒ‰ƒ“ƒ_ƒ€‚ÉØ‚è‘Ö‚¦‚éŠÔŠu (30F=0.5•b)
     static constexpr int ARRIVAL_TIME = 180;   // ƒlƒR‚ª“’…‚·‚é‚Ü‚Å‚Ì—P—\ŠÔ (180F=3•b)

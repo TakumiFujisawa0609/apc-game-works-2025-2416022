@@ -92,6 +92,9 @@ private:
 	TARGET targetType_ = TARGET::NONE;
 
 	int img_;
+	int imgA_;
+	int imgB_;
+	int imgC_;
 
 	VECTOR pos_;
 
@@ -111,6 +114,8 @@ private:
 
 	TARGET lastTargetType_ = TARGET::NONE;
 	int targetCoolDown_ = 0;
+
+	int frameCounter_;
 
 	bool isMouseOver_;
 
