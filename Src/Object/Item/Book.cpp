@@ -115,9 +115,9 @@ void Book::Draw(void)
     //DrawFormatString(0, 30, GetColor(255, 255, 255), "Book ID: %d", currentImageId_);
 
     // isTargetImgFlag_ の状態も確認したい場合は以下を追加
-    DrawFormatString(0, 50, GetColor(255, 255, 0), "Target Flag: %s", isTargetImgFlag_ ? "TRUE" : "FALSE");
+    //DrawFormatString(0, 50, GetColor(255, 255, 0), "Target Flag: %s", isTargetImgFlag_ ? "TRUE" : "FALSE");
 
-    DrawFormatString(0, 70, GetColor(255, 255, 255), "flag: %s", flag_ ? "TRUE" : "FALSE");
+    //DrawFormatString(0, 70, GetColor(255, 255, 255), "flag: %s", flag_ ? "TRUE" : "FALSE");
 }
 
 void Book::Release()

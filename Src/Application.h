@@ -40,6 +40,8 @@ public:
 	static const std::string PATH_SE;
 	//----------------------------------------
 
+	static bool isHardMode;
+
 	//明治的にインスタンスを生成する
 	static void CreateInstance(void);
 

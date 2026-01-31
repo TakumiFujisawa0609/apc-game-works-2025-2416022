@@ -17,7 +17,7 @@ void SceneTitle::Init(void)
 	AudioManager::GetInstance()->LoadSceneSound(LoadScene::TITLE);
 	AudioManager::GetInstance()->PlayBGM(SoundID::BGM_TITLE);
 
-	logo_ = LoadGraph((Application::PATH_IMAGE + "nc362712.png").c_str());
+	logo_ = LoadGraph((Application::PATH_IMAGE + "Title.png").c_str());
 	
 	GetGraphSize(logo_, &logoX_, &logoY_);
 
@@ -51,6 +51,13 @@ void SceneTitle::Update(void)
 	if (isHit && InputManager::GetInstance().IsTrgMouseLeft())
 	{
 
+		if (CheckHitKey(KEY_INPUT_LSHIFT) || CheckHitKey(KEY_INPUT_RSHIFT)) {
+			Application::isHardMode = true;
+		}
+		else {
+			Application::isHardMode = false;
+		}
+
 		AudioManager::GetInstance()->PlaySE(SoundID::SE_CLICK);
 
 		//シーン遷移
@@ -70,21 +77,14 @@ void SceneTitle::Draw(void)
 
 #endif // SCENE_DEBUG
 
-	DrawFormatString(0, 0, 0xffffff, "仮タイトルです。張り紙をクリックすると次に進みます。");
+	//DrawFormatString(0, 0, 0xffffff, "仮タイトルです。張り紙をクリックすると次に進みます。");
 
 	//タイトルロゴ
 	DrawRotaGraph(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2, 0.5, 0.0, logo_, true);
 
 
 	// 枠を描画
-	DrawBox(
-		cx,  // 左上X
-		cy,  // 左上Y
-		cx1,  // 右下X
-		cy1,  // 右下Y
-		GetColor(255, 0, 0),
-		FALSE
-	);
+	//DrawBox(cx, cy, cx1,cy1,GetColor(255, 0, 0),FALSE);
 
 	int font = CreateFontToHandle(NULL, 10, 10);
 

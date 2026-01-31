@@ -206,7 +206,9 @@ void SceneGame::Update(void)
 
 	// --- ゲームクリアタイマー ---
 	count_++;
-	if (count_ >= 7200)
+	int clearTime = Application::isHardMode ? 7200 : 3600;
+
+	if (count_ >= clearTime)
 	{
 		SceneManager::GetInstance().ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
 		return;
@@ -216,7 +218,7 @@ void SceneGame::Update(void)
 
 void SceneGame::Draw(void)
 {
-	DrawFormatString(0, 0, 0xffffff, "異常を発見したらクリックで対処してください。");
+	
 
 	stage_->Draw();
 	neko_->Draw();
@@ -354,6 +356,12 @@ void SceneGame::Draw(void)
 			DrawStringToHandle(0, Application::SCREEN_SIZE_Y - 40, "本棚の整理を怠ってはいけません。部屋の管理があなたの仕事です。", GetColor(255, 0, 0), fontHandle);
 		}
 	}
+
+	DrawFormatString(0, 0, 0x000000, "異常を発見したらクリックで対処してください。");
+	if (Application::isHardMode && !isGameOver_) {
+		DrawString(0, 20, "MODE: HARD (Time x2)", GetColor(255, 0, 0));
+	}
+
 }
 
 
@@ -577,7 +585,7 @@ void SceneGame::DrawInfo()
 		DrawFormatString(
 			0,
 			Application::SCREEN_SIZE_Y - 40,
-			GetColor(255, 255, 255),
+			GetColor(0, 0, 0),
 			"%s", infoText);
 	}
 }

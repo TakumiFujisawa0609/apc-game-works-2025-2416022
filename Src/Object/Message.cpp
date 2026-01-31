@@ -24,8 +24,10 @@ void Message::Init(void)
 	flagImg_ = true;
 
     // âÊëúì«Ç›çûÇ›
-    images_.push_back(LoadGraph((Application::PATH_TEXT + "nc111382.png").c_str()));
-	images_.push_back(LoadGraph((Application::PATH_TEXT + "nc111380.png").c_str()));
+    images_.push_back(LoadGraph((Application::PATH_TEXT + "Text1.png").c_str()));
+    images_.push_back(LoadGraph((Application::PATH_TEXT + "Text2.png").c_str()));
+    images_.push_back(LoadGraph((Application::PATH_TEXT + "Text3.png").c_str()));
+    images_.push_back(LoadGraph((Application::PATH_TEXT + "Text4.png").c_str()));
 
 	imgA_ = LoadGraph((Application::PATH_TEXT + "nc111382.png").c_str());
 	imgB_ = LoadGraph((Application::PATH_STAGE + "çïîwåi.png").c_str());

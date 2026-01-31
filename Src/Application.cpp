@@ -12,6 +12,8 @@
 
 Application* Application::instance_ = nullptr;
 
+bool Application::isHardMode = false;
+
 //ファイル指定パス
 const std::string Application::PATH_IMAGE = "Data/Title/";
 const std::string Application::PATH_MODEL = "Data/Neko/";
